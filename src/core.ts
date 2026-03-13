@@ -26,21 +26,26 @@ const toCssVar = (path: string[]) => `--${path.join("-")}`
 const createCssVars = (
   obj: Record<string, any>,
   prefix: string[] = [],
+  isReference = false
 ): string => {
   return Object.entries(obj).reduce((acc, [key, value]) => {
     const newPath = [...prefix, key]
 
     if (isObject(value)) {
-      return acc + createCssVars(value, newPath)
+      return acc + createCssVars(value, newPath, isReference)
     }
 
     if (typeof value === "string" && value.includes("px")) {
       throw new Error(
-        `Grammr Style: 'px' values are not allowed. Found '${value}' at path '${newPath.join(".")}'. Please use rem or em.`,
+        `Grammr Style: 'px' values are not allowed. Found '${value}' at path '${newPath.join(".")}'. Please use rem or em.`
       )
     }
 
-    return acc + `${toCssVar(newPath)}: ${value};\n`
+    const finalValue = (isReference && typeof value === 'string' && value.includes('.')) 
+      ? `var(--${value.replace(/\./g, "-")})` 
+      : value;
+
+    return acc + `${toCssVar(newPath)}: ${finalValue};\n`
   }, "")
 }
 
@@ -70,12 +75,19 @@ export const createTheme = <
   const breakpoints = config.breakpoints
 
   // Generate Base Variables (e.g. :root or body)
-  let cssText = `:root {\n${createCssVars(semantics)}}\n`
+  let cssText = `:root {\n`
+  
+  if (Object.keys(primitives).length > 0) {
+    cssText += createCssVars(primitives)
+  }
+
+  cssText += createCssVars(semantics, [], true)
+  cssText += `}\n`
 
   // Generate Mode Variables (e.g. [data-theme="dark"])
   if (modes) {
     Object.entries(modes).forEach(([modeName, modeTokens]) => {
-      cssText += `\n[data-theme="${modeName}"] {\n${createCssVars(modeTokens as any)}}\n`
+      cssText += `\n[data-theme="${modeName}"] {\n${createCssVars(modeTokens as any, [], true)}}\n`
     })
   }
 
@@ -85,14 +97,14 @@ export const createTheme = <
       const bpValue = breakpoints[bpName]
       if (bpValue) {
         cssText += `\n@media (min-width: ${bpValue}) {\n  :root {\n${createCssVars(
-          bpTokens as any,
+          bpTokens as any, [], true
         )
           .split("\n")
           .map(l => (l ? `    ${l}` : ""))
           .join("\n")}  }\n}\n`
       } else {
         console.warn(
-          `Grammr Style: Breakpoint '${bpName}' was used in responsive options, but not defined in breakpoints.`,
+          `Grammr Style: Breakpoint '${bpName}' was used in responsive options, but not defined in breakpoints.`
         )
       }
     })
