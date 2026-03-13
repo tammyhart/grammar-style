@@ -11,7 +11,13 @@ export function defineGrammar<
   return config as any;
 }
 
-export * from "./core"
+export { createTheme } from "./core"
 export { default as token } from "./token"
-export * from "./config"
-export * from "./defaults"
+export { loadConfig } from "./config"
+
+// Expose defaults directly for manual user reference if needed
+export { defaultBreakpoints, defaultSizes } from "./defaults"
+
+// Expose helpful utility types for external typed setups
+export type { ThemeConfig, TokenPath, DeepPartial } from "./types"
+export type { ValidSizeStr, BreakpointName } from "./defaults"

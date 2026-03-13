@@ -94,6 +94,7 @@ export interface ThemeConfig<
   S extends Record<string, any>,
 > {
   options?: {
+    content?: string[];
     breakpoints?: Record<string, string>;
   };
   primitives?: P;
@@ -103,7 +104,10 @@ export interface ThemeConfig<
 }
 
 export interface BaseGrammarConfig<P> {
-  options?: object;
+  options?: {
+    content?: string[];
+    breakpoints?: Record<string, any>;
+  };
   primitives?: P;
   semantics: object;
   modes?: object;
