@@ -1,4 +1,5 @@
 import type { DeepPartial, StrictDeepPartial } from "./types"
+import { defaultSizes } from "./defaults"
 
 export interface ThemeConfig<
   P extends Record<string, any>,
@@ -55,7 +56,10 @@ export const createTheme = <
 >(
   config: ThemeConfig<P, S>,
 ) => {
-  const primitives = config.primitives || ({} as P)
+  const primitives = { 
+    size: defaultSizes,
+    ...(config.primitives || ({} as P))
+  } as P & { size: typeof defaultSizes }
 
   const semantics =
     typeof config.semantics === "function"

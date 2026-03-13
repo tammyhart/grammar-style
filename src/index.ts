@@ -33,11 +33,17 @@ export type ValidateModes<M, S, P> = {
     : never;
 };
 
+import type { DefaultSizes } from "./defaults";
+
+export type CorePrimitives = {
+  size: DefaultSizes;
+};
+
 export type ValidatedConfig<P, C> = {
   primitives?: P;
-  semantics: ExpectedShape<ExtractS<C>, P>;
-  modes?: ValidateModes<ExtractM<C>, ExtractS<C>, P>;
-  responsive?: ValidateModes<ExtractR<C>, ExtractS<C>, P>;
+  semantics: ExpectedShape<ExtractS<C>, P & CorePrimitives>;
+  modes?: ValidateModes<ExtractM<C>, ExtractS<C>, P & CorePrimitives>;
+  responsive?: ValidateModes<ExtractR<C>, ExtractS<C>, P & CorePrimitives>;
 };
 
 /**
@@ -54,3 +60,4 @@ export function defineGrammar<
 export * from "./core"
 export { default as token } from "./token"
 export * from "./config"
+export * from "./defaults"
