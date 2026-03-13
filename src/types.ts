@@ -165,10 +165,14 @@ export type ExtractB<C> = C extends { options?: { breakpoints?: infer B } }
     : B
   : {};
 
-export type HasCustomBreakpoints<C> = keyof ExtractB<C> extends never ? false : true;
+export type CustomKeys<C> = keyof ExtractB<C> & string;
+export type HasCustomBreakpoints<C> = CustomKeys<C> extends never ? false : true;
+export type HasOnlyDefaultOverrides<C> = Exclude<CustomKeys<C>, BaseBreakpointName> extends never ? true : false;
 
 export type AllowedBaseBreakpoints<C> = HasCustomBreakpoints<C> extends true
-  ? (keyof ExtractB<C> & string)
+  ? HasOnlyDefaultOverrides<C> extends true
+    ? BaseBreakpointName
+    : CustomKeys<C>
   : BaseBreakpointName;
 
 export type AllowedBreakpoints<C> = AllowedBaseBreakpoints<C> | `${AllowedBaseBreakpoints<C>}Max`;

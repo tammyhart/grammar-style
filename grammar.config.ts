@@ -4,7 +4,6 @@ export default defineGrammar({
   options: {
     breakpoints: {
       palm: "size.500",
-      lap: "size.1000",
     },
   },
 

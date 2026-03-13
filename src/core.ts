@@ -127,7 +127,14 @@ export const createTheme = <
   config: ThemeConfig<P, S>,
 ) => {
   const optionsBreakpoints = config.options?.breakpoints || {}
-  const breakpoints: Record<string, string> = { ...defaultBreakpoints }
+  
+  const hasOnlyDefaultOverrides = Object.keys(optionsBreakpoints).every(
+    key => key in defaultBreakpoints
+  )
+
+  const breakpoints: Record<string, string> = hasOnlyDefaultOverrides 
+    ? { ...defaultBreakpoints } 
+    : {}
 
   Object.entries(optionsBreakpoints).forEach(([key, value]) => {
     breakpoints[key] = value as string
