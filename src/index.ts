@@ -8,6 +8,7 @@ import type {
 } from "./types"
 
 export interface BaseGrammarConfig<P> {
+  breakpoints?: object;
   primitives?: P;
   semantics: object;
   modes?: object;
@@ -33,17 +34,38 @@ export type ValidateModes<M, S, P> = {
     : never;
 };
 
-import type { DefaultSizes } from "./defaults";
+import type { DefaultSizes, BreakpointName, ValidBreakpointValue } from "./defaults";
 
 export type CorePrimitives = {
   size: DefaultSizes;
 };
 
+export type ValidateResponsive<R, S, P> = {
+  [K in keyof R]: K extends BreakpointName
+    ? ValidateOverrides<R[K], DeepPartialPaths<SafeNoInfer<S>, P>>
+    : "Error: Responsive keys must be valid breakpoint names (e.g. palm, grip)";
+};
+
+export type ValidateBreakpoints<B> = {
+  [K in keyof B]: K extends BreakpointName
+    ? B[K] extends ValidBreakpointValue
+      ? B[K]
+      : "Error: Breakpoint values must be a valid size dot-path (e.g. 'size.100') or a rem value (e.g. '40rem')"
+    : "Error: Breakpoint must be a valid name (e.g. palm, palmMax, grip, etc.)";
+};
+
+export type ExtractB<C> = C extends { breakpoints?: infer B }
+  ? B extends undefined
+    ? {}
+    : B
+  : {};
+
 export type ValidatedConfig<P, C> = {
+  breakpoints?: ValidateBreakpoints<ExtractB<C>>;
   primitives?: P;
   semantics: ExpectedShape<ExtractS<C>, P & CorePrimitives>;
   modes?: ValidateModes<ExtractM<C>, ExtractS<C>, P & CorePrimitives>;
-  responsive?: ValidateModes<ExtractR<C>, ExtractS<C>, P & CorePrimitives>;
+  responsive?: ValidateResponsive<ExtractR<C>, ExtractS<C>, P & CorePrimitives>;
 };
 
 /**

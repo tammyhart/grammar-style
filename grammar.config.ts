@@ -39,5 +39,8 @@ export default defineGrammar({
     lap: {
       spacing: "size.1",
     },
+    lapMax: {
+      spacing: "size.1",
+    },
   },
 })

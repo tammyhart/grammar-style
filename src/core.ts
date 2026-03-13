@@ -1,5 +1,5 @@
 import type { DeepPartial, StrictDeepPartial } from "./types"
-import { defaultSizes } from "./defaults"
+import { defaultSizes, defaultBreakpoints } from "./defaults"
 
 export interface ThemeConfig<
   P extends Record<string, any>,
@@ -76,7 +76,10 @@ export const createTheme = <
       ? (config.responsive as any)(primitives, semantics)
       : config.responsive
 
-  const breakpoints = config.breakpoints
+  const breakpoints = {
+    ...defaultBreakpoints,
+    ...(config.breakpoints || {})
+  }
 
   // Generate Base Variables (e.g. :root or body)
   let cssText = `:root {\n`
@@ -98,9 +101,38 @@ export const createTheme = <
   // Generate Responsive Variables
   if (responsive && breakpoints) {
     Object.entries(responsive).forEach(([bpName, bpTokens]) => {
-      const bpValue = breakpoints[bpName]
+      let bpValue = breakpoints[bpName as keyof typeof breakpoints] as string
       if (bpValue) {
-        cssText += `\n@media (min-width: ${bpValue}) {\n  :root {\n${createCssVars(
+        let bpValueStr = bpValue as string;
+
+        // Resolve math evaluation like "size.800 - size.1" natively into rem calculations
+        if (bpValueStr.includes(' - ')) {
+          const [left, right] = bpValueStr.split(' - ');
+          if (left.startsWith('size.') && right.startsWith('size.') && primitives.size) {
+            const key1 = left.split('.')[1] as keyof typeof primitives.size;
+            const key2 = right.split('.')[1] as keyof typeof primitives.size;
+            
+            const val1 = primitives.size[key1] as string | undefined;
+            const val2 = primitives.size[key2] as string | undefined;
+
+            if (val1 && val2) {
+              const num1 = parseFloat(val1);
+              const num2 = parseFloat(val2);
+              bpValueStr = `${num1 - num2}rem`;
+            }
+          }
+        } 
+        // Resolve standard "size.800"
+        else if (bpValueStr.startsWith('size.') && primitives.size) {
+          const sizeKey = bpValueStr.split('.')[1] as keyof typeof primitives.size;
+          if (primitives.size[sizeKey]) {
+            bpValueStr = primitives.size[sizeKey] as string;
+          }
+        }
+
+        const condition = bpName.endsWith("Max") ? `max-width` : `min-width`;
+        
+        cssText += `\n@media (${condition}: ${bpValueStr}) {\n  :root {\n${createCssVars(
           bpTokens as any, [], true
         )
           .split("\n")
