@@ -1,19 +1,5 @@
-import type { DeepPartial, StrictDeepPartial } from "./types"
+import type { DeepPartial, StrictDeepPartial, ThemeConfig } from "./types"
 import { defaultSizes, defaultBreakpoints } from "./defaults"
-
-export interface ThemeConfig<
-  P extends Record<string, any>,
-  S extends Record<string, any>,
-> {
-  options?: {
-    breakpoints?: Record<string, string>;
-  };
-  primitives?: P;
-  semantics: S;
-  modes?: Record<string, DeepPartial<S>>;
-  responsive?: Record<string, DeepPartial<S>>;
-}
-
 const isObject = (item: any): item is Record<string, any> => {
   return item && typeof item === "object" && !Array.isArray(item)
 }

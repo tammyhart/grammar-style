@@ -1,40 +1,6 @@
 import { resolve } from "node:path"
 import { createJiti } from "jiti"
-import type { ThemeConfig } from "./core"
-import type { DeepPartial } from "./types"
-
-// Helper to ensure TypeScript strictly compares the user's string keys against the Semantic object literal
-// This provides a friendly, human-readable error EXACTLY on the misspelled key in their editor!
-type Exactly<T, Expected> = T & {
-  [K in keyof T]: K extends keyof Expected ?
-    Expected[K] extends object ?
-      Exactly<T[K], Expected[K]>
-    : Expected[K]
-  : "Error: This property does not exist in your semantics shape"
-}
-
-// Optional helper for users to get autocomplete in their config file without importing createTheme
-export function defineGrammar<
-  P extends Record<string, any>,
-  S extends Record<string, any>,
-  M extends Record<string, any> = {},
-  R extends Record<string, any> = {},
->(config: {
-  breakpoints?: Record<string, string>
-  primitives?: P
-  semantics: (primitives: P) => S
-  modes?: (
-    primitives: P,
-    semantics: S,
-  ) => M & Exactly<M, Record<string, DeepPartial<S>>>
-  responsive?: (
-    primitives: P,
-    semantics: S,
-  ) => R & Exactly<R, Record<string, DeepPartial<S>>>
-}): ThemeConfig<P, S> {
-  return config as any
-}
-
+import type { ThemeConfig, DeepPartial } from "./types"
 export const loadConfig = async (
   cwd: string = process.cwd(),
 ): Promise<ThemeConfig<any, any> | null> => {
