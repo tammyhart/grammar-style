@@ -40,18 +40,12 @@ export type CorePrimitives = {
   size: DefaultSizes;
 };
 
-export type ValidateResponsive<R, S, P> = {
-  [K in keyof R]: K extends BreakpointName
-    ? ValidateOverrides<R[K], DeepPartialPaths<SafeNoInfer<S>, P>>
-    : "Error: Responsive keys must be valid breakpoint names (e.g. palm, grip)";
-};
-
 export type ValidateBreakpoints<B> = {
-  [K in keyof B]: K extends BaseBreakpointName
-    ? B[K] extends ValidBreakpointValue
+  [K in keyof B]: K extends `${string}Max`
+    ? "Error: Max breakpoints are auto-generated. Please define base names only."
+    : B[K] extends ValidBreakpointValue
       ? B[K]
       : ValidBreakpointValue | "Error: Breakpoint values must be a valid size dot-path (e.g. 'size.100') or a rem value (e.g. '40rem')"
-    : "Error: Breakpoint must be a valid base name (e.g. palm, grip, lap, desk, wall). Max breakpoints are auto-generated.";
 };
 
 export type ExtractB<C> = C extends { options?: { breakpoints?: infer B } }
@@ -60,6 +54,20 @@ export type ExtractB<C> = C extends { options?: { breakpoints?: infer B } }
     : B
   : {};
 
+export type HasCustomBreakpoints<C> = keyof ExtractB<C> extends never ? false : true;
+
+export type AllowedBaseBreakpoints<C> = HasCustomBreakpoints<C> extends true
+  ? (keyof ExtractB<C> & string)
+  : BaseBreakpointName;
+
+export type AllowedBreakpoints<C> = AllowedBaseBreakpoints<C> | `${AllowedBaseBreakpoints<C>}Max`;
+
+export type ValidateResponsive<R, S, P, C> = {
+  [K in keyof R]: K extends AllowedBreakpoints<C>
+    ? ValidateOverrides<R[K], DeepPartialPaths<SafeNoInfer<S>, P>>
+    : "Error: Responsive key must be a valid base breakpoint name. Max breakpoints are generated natively.";
+};
+
 export type ValidatedConfig<P, C> = {
   options?: {
     breakpoints?: ValidateBreakpoints<ExtractB<C>>;
@@ -67,7 +75,7 @@ export type ValidatedConfig<P, C> = {
   primitives?: P;
   semantics: ExpectedShape<ExtractS<C>, P & CorePrimitives>;
   modes?: ValidateModes<ExtractM<C>, ExtractS<C>, P & CorePrimitives>;
-  responsive?: ValidateResponsive<ExtractR<C>, ExtractS<C>, P & CorePrimitives>;
+  responsive?: ValidateResponsive<ExtractR<C>, ExtractS<C>, P & CorePrimitives, C>;
 };
 
 /**
