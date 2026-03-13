@@ -3,7 +3,7 @@ import { createJiti } from "jiti"
 import type { ThemeConfig, DeepPartial } from "./types"
 export const loadConfig = async (
   cwd: string = process.cwd(),
-): Promise<ThemeConfig<any, any> | null> => {
+): Promise<ThemeConfig<Record<string, unknown>, Record<string, unknown>> | null> => {
   const jiti = createJiti(cwd)
 
   const configFiles = [
@@ -19,15 +19,16 @@ export const loadConfig = async (
     try {
       // Jiti resolves TS and ESM in Node natively
       const parsedConfig = (await jiti.import(filePath, { default: true })) as
-        | ThemeConfig<any, any>
-        | { default: ThemeConfig<any, any> }
+        | ThemeConfig<Record<string, unknown>, Record<string, unknown>>
+        | { default: ThemeConfig<Record<string, unknown>, Record<string, unknown>> }
 
       const config =
         "default" in parsedConfig ? parsedConfig.default : parsedConfig
       return config
-    } catch (e: any) {
+    } catch (e: unknown) {
       // Allow module not found, throw on syntax errors
-      if (e.code !== "MODULE_NOT_FOUND" && e.code !== "ERR_MODULE_NOT_FOUND") {
+      const err = e as { code?: string }
+      if (err.code !== "MODULE_NOT_FOUND" && err.code !== "ERR_MODULE_NOT_FOUND") {
         console.error(`Error loading ${file}:`, e)
         throw e
       }

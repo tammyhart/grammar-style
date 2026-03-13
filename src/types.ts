@@ -60,7 +60,7 @@ export type ExpectedShape<Input, P> = {
     : PathToDots<P>
 };
 
-export type SafeNoInfer<T> = [T][T extends any ? 0 : never];
+export type SafeNoInfer<T> = [T][T extends unknown ? 0 : never];
 
 export type DeepPartial<T> = T extends object
   ? {
@@ -87,15 +87,16 @@ export type StrictDeepPartial<Shape, Input> = Input extends object
     }
   : DeepPartial<Shape>
 
-import type { DefaultSizes, BreakpointName, BaseBreakpointName, ValidBreakpointValue } from "./defaults"
+import type { DefaultSizes, BreakpointName, BaseBreakpointName, ValidBreakpointValue, ValidModeName } from "./defaults"
 
 export interface ThemeConfig<
-  P extends Record<string, any>,
-  S extends Record<string, any>,
+  P extends Record<string, unknown>,
+  S extends Record<string, unknown>,
 > {
   options?: {
     content?: string[];
     breakpoints?: Record<string, string>;
+    modes?: string[];
   };
   primitives?: P;
   semantics: S;
@@ -106,7 +107,8 @@ export interface ThemeConfig<
 export interface BaseGrammarConfig<P> {
   options?: {
     content?: string[];
-    breakpoints?: Record<string, any>;
+    breakpoints?: Record<string, string>;
+    modes?: readonly string[];
   };
   primitives?: P;
   semantics: object;
@@ -114,8 +116,8 @@ export interface BaseGrammarConfig<P> {
   responsive?: object;
 }
 
-export type ExtractP<C> = C extends { primitives: infer P } ? P : any;
-export type ExtractS<C> = C extends { semantics: infer Sem } ? Sem : any;
+export type ExtractP<C> = C extends { primitives: infer P } ? P : unknown;
+export type ExtractS<C> = C extends { semantics: infer Sem } ? Sem : unknown;
 export type ExtractM<C> = C extends { modes?: infer M }
   ? M extends undefined
     ? {}
@@ -127,10 +129,22 @@ export type ExtractR<C> = C extends { responsive?: infer R }
     : R
   : {};
 
-export type ValidateModes<M, S, P> = {
-  [K in keyof M]: K extends string
+export type ExtractModeOptions<C> = C extends { options?: { modes?: infer M } }
+  ? M extends ReadonlyArray<string>
+    ? M[number]
+    : never
+  : never;
+
+export type HasCustomModes<C> = ExtractModeOptions<C> extends never ? false : true;
+
+export type AllowedModes<C> = HasCustomModes<C> extends true
+  ? ExtractModeOptions<C>
+  : ValidModeName;
+
+export type ValidateModes<M, S, P, C> = {
+  [K in keyof M]: K extends AllowedModes<C>
     ? ValidateOverrides<M[K], DeepPartialPaths<SafeNoInfer<S>, P>>
-    : never;
+    : "Error: Mode name must be a valid default mode ('dark', 'light') or defined in options.modes";
 };
 
 export type CorePrimitives = {
@@ -171,6 +185,6 @@ export type ValidatedConfig<P, C> = {
   };
   primitives?: P;
   semantics: ExpectedShape<ExtractS<C>, P & CorePrimitives>;
-  modes?: ValidateModes<ExtractM<C>, ExtractS<C>, P & CorePrimitives>;
+  modes?: ValidateModes<ExtractM<C>, ExtractS<C>, P & CorePrimitives, C>;
   responsive?: ValidateResponsive<ExtractR<C>, ExtractS<C>, P & CorePrimitives, C>;
 };

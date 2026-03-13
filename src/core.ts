@@ -1,13 +1,13 @@
 import type { ThemeConfig } from "./types"
 import { defaultSizes, defaultBreakpoints } from "./defaults"
-const isObject = (item: any): item is Record<string, any> => {
-  return item && typeof item === "object" && !Array.isArray(item)
+const isObject = (item: unknown): item is Record<string, unknown> => {
+  return !!item && typeof item === "object" && !Array.isArray(item)
 }
 
 const toCssVar = (path: string[]) => `--${path.join("-")}`
 
 const createCssVars = (
-  obj: Record<string, any>,
+  obj: Record<string, unknown>,
   prefix: string[] = [],
   isReference = false,
 ): string => {
@@ -33,10 +33,10 @@ const createCssVars = (
   }, "")
 }
 
-const getUsedSizes = (config: any): Set<string> => {
+const getUsedSizes = (config: ThemeConfig<Record<string, unknown>, Record<string, unknown>>): Set<string> => {
   const used = new Set<string>()
 
-  const scanObj = (obj: any) => {
+  const scanObj = (obj: unknown) => {
     if (typeof obj === "string") {
       const match = obj.match(/size\.([A-Za-z0-9\-\.]+)/g)
       if (match) match.forEach(m => used.add(m.replace("size.", "")))
@@ -51,8 +51,8 @@ const getUsedSizes = (config: any): Set<string> => {
   scanObj(config.modes)
   scanObj(config.responsive)
 
-  let fs: any
-  let path: any
+  let fs: { existsSync: (path: string) => boolean; statSync: (path: string) => { isDirectory: () => boolean }; readdirSync: (path: string) => string[]; readFileSync: (path: string, options: string) => string } | undefined
+  let path: { join: (...paths: string[]) => string; resolve: (...paths: string[]) => string } | undefined
   try {
     fs = eval(`require('node:fs')`)
     path = eval(`require('node:path')`)
@@ -121,8 +121,8 @@ const getUsedSizes = (config: any): Set<string> => {
 }
 
 export const createTheme = <
-  P extends Record<string, any>,
-  S extends Record<string, any>,
+  P extends Record<string, unknown>,
+  S extends Record<string, unknown>,
 >(
   config: ThemeConfig<P, S>,
 ) => {
@@ -133,7 +133,7 @@ export const createTheme = <
     breakpoints[key] = value as string
 
     // Auto-generate Max counterpart if not explicitly provided
-    if (!key.endsWith("Max") && !(optionsBreakpoints as any)[`${key}Max`]) {
+    if (!key.endsWith("Max") && !(optionsBreakpoints as Record<string, string>)[`${key}Max`]) {
       const valStr = value as string
       if (valStr.startsWith("size.")) {
         breakpoints[`${key}Max`] = `${valStr} - size.1`
@@ -156,8 +156,8 @@ export const createTheme = <
   // Generate Base Variables (e.g. :root or body)
   let cssText = `:root {\n`
 
-  const usedSizes = getUsedSizes(config, breakpoints)
-  const primitivesForCss = { ...primitives } as any
+  const usedSizes = getUsedSizes(config as ThemeConfig<Record<string, unknown>, Record<string, unknown>>)
+  const primitivesForCss = { ...primitives } as P & { size?: Record<string, string> }
 
   if (usedSizes.size > 0 && primitivesForCss.size) {
     const filteredSizes: Record<string, string> = {}
@@ -179,7 +179,7 @@ export const createTheme = <
   // Generate Mode Variables (e.g. [data-theme="dark"])
   if (modes) {
     Object.entries(modes).forEach(([modeName, modeTokens]) => {
-      cssText += `\n[data-theme="${modeName}"] {\n${createCssVars(modeTokens as any, [], true)}}\n`
+      cssText += `\n[data-theme="${modeName}"] {\n${createCssVars(modeTokens as Record<string, unknown>, [], true)}}\n`
     })
   }
 
@@ -224,7 +224,7 @@ export const createTheme = <
         const condition = bpName.endsWith("Max") ? `max-width` : `min-width`
 
         cssText += `\n@media (${condition}: ${bpValueStr}) {\n  :root {\n${createCssVars(
-          bpTokens as any,
+          bpTokens as Record<string, unknown>,
           [],
           true,
         )

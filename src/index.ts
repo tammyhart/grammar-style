@@ -5,10 +5,10 @@ import type { BaseGrammarConfig, ValidatedConfig } from "./types"
  * All invalid property paths are highlighted exactly at their source without throwing high-level generic warnings.
  */
 export function defineGrammar<
-  P extends Record<string, any>,
+  P extends Record<string, unknown>,
   const C extends BaseGrammarConfig<P>
 >(config: C extends ValidatedConfig<P, C> ? C : ValidatedConfig<P, C>): Readonly<C & ValidatedConfig<P, C>> {
-  return config as any;
+  return config as unknown as Readonly<C & ValidatedConfig<P, C>>;
 }
 
 export { createTheme } from "./core"

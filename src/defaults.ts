@@ -69,3 +69,6 @@ export const defaultBreakpoints = generateBreakpoints()
 
 export type DefaultBreakpoints = typeof defaultBreakpoints
 export type DefaultSizes = typeof defaultSizes
+
+export const defaultModes = ["dark", "light"] as const
+export type ValidModeName = typeof defaultModes[number]
