@@ -5,7 +5,9 @@ export interface ThemeConfig<
   P extends Record<string, any>,
   S extends Record<string, any>,
 > {
-  breakpoints?: Record<string, string>
+  options?: {
+    breakpoints?: Record<string, string>;
+  };
   primitives?: P
   semantics: S | ((primitives: P) => S)
 
@@ -76,10 +78,23 @@ export const createTheme = <
       ? (config.responsive as any)(primitives, semantics)
       : config.responsive
 
-  const breakpoints = {
-    ...defaultBreakpoints,
-    ...(config.breakpoints || {})
-  }
+  const optionsBreakpoints = config.options?.breakpoints || {}
+  const breakpoints: Record<string, string> = { ...defaultBreakpoints }
+
+  Object.entries(optionsBreakpoints).forEach(([key, value]) => {
+    breakpoints[key] = value as string
+    
+    // Auto-generate Max counterpart if not explicitly provided
+    if (!key.endsWith("Max") && !(optionsBreakpoints as any)[`${key}Max`]) {
+      const valStr = value as string
+      if (valStr.startsWith("size.")) {
+        breakpoints[`${key}Max`] = `${valStr} - size.1`
+      } else if (valStr.endsWith("rem")) {
+        const num = parseFloat(valStr)
+        breakpoints[`${key}Max`] = `${num - 0.0625}rem`
+      }
+    }
+  })
 
   // Generate Base Variables (e.g. :root or body)
   let cssText = `:root {\n`

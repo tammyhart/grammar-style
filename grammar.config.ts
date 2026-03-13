@@ -1,6 +1,13 @@
 import { defineGrammar } from "./src"
 
 export default defineGrammar({
+  // Options configuring framework behaviors
+  options: {
+    breakpoints: {
+      palm: "size.500",
+    },
+  },
+
   // 1. Define your raw primitive values
   primitives: {
     color: {
@@ -36,10 +43,10 @@ export default defineGrammar({
   },
 
   responsive: {
-    lap: {
+    palm: {
       spacing: "size.1",
     },
-    lapMax: {
+    palmMax: {
       spacing: "size.1",
     },
   },

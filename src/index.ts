@@ -8,7 +8,7 @@ import type {
 } from "./types"
 
 export interface BaseGrammarConfig<P> {
-  breakpoints?: object;
+  options?: object;
   primitives?: P;
   semantics: object;
   modes?: object;
@@ -34,7 +34,7 @@ export type ValidateModes<M, S, P> = {
     : never;
 };
 
-import type { DefaultSizes, BreakpointName, ValidBreakpointValue } from "./defaults";
+import type { DefaultSizes, BreakpointName, BaseBreakpointName, ValidBreakpointValue } from "./defaults";
 
 export type CorePrimitives = {
   size: DefaultSizes;
@@ -47,21 +47,23 @@ export type ValidateResponsive<R, S, P> = {
 };
 
 export type ValidateBreakpoints<B> = {
-  [K in keyof B]: K extends BreakpointName
+  [K in keyof B]: K extends BaseBreakpointName
     ? B[K] extends ValidBreakpointValue
       ? B[K]
-      : "Error: Breakpoint values must be a valid size dot-path (e.g. 'size.100') or a rem value (e.g. '40rem')"
-    : "Error: Breakpoint must be a valid name (e.g. palm, palmMax, grip, etc.)";
+      : ValidBreakpointValue | "Error: Breakpoint values must be a valid size dot-path (e.g. 'size.100') or a rem value (e.g. '40rem')"
+    : "Error: Breakpoint must be a valid base name (e.g. palm, grip, lap, desk, wall). Max breakpoints are auto-generated.";
 };
 
-export type ExtractB<C> = C extends { breakpoints?: infer B }
+export type ExtractB<C> = C extends { options?: { breakpoints?: infer B } }
   ? B extends undefined
     ? {}
     : B
   : {};
 
 export type ValidatedConfig<P, C> = {
-  breakpoints?: ValidateBreakpoints<ExtractB<C>>;
+  options?: {
+    breakpoints?: ValidateBreakpoints<ExtractB<C>>;
+  };
   primitives?: P;
   semantics: ExpectedShape<ExtractS<C>, P & CorePrimitives>;
   modes?: ValidateModes<ExtractM<C>, ExtractS<C>, P & CorePrimitives>;

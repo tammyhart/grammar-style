@@ -34,24 +34,38 @@ const generateSizes = () => {
 
 export const defaultSizes = generateSizes()
 
-export const defaultBreakpoints = {
+export const baseBreakpoints = {
   palm: "size.600",
-  palmMax: "size.600 - size.1",
   grip: "size.800",
-  gripMax: "size.800 - size.1",
   lap: "size.1000",
-  lapMax: "size.1000 - size.1",
   desk: "size.1200",
-  deskMax: "size.1200 - size.1",
   wall: "size.1400",
-  wallMax: "size.1400 - size.1",
 } as const
 
-export type BreakpointName = keyof typeof defaultBreakpoints
+export type BaseBreakpointName = keyof typeof baseBreakpoints
+export type BreakpointName = BaseBreakpointName | `${BaseBreakpointName}Max`
+
 export type ValidBreakpointValue =
   | `size.${ValidSizeStr}`
   | `size.${ValidSizeStr} - size.1`
   | `${number}rem`
+
+const generateBreakpoints = () => {
+  const bps: Record<string, string> = { ...baseBreakpoints }
+  
+  for (const [key, value] of Object.entries(baseBreakpoints)) {
+    if (value.startsWith("size.")) {
+      bps[`${key}Max`] = `${value} - size.1`
+    } else if (value.endsWith("rem")) {
+      const num = parseFloat(value)
+      bps[`${key}Max`] = `${num - 0.0625}rem`
+    }
+  }
+  
+  return bps as Record<BreakpointName, ValidBreakpointValue>
+}
+
+export const defaultBreakpoints = generateBreakpoints()
 
 export type DefaultBreakpoints = typeof defaultBreakpoints
 export type DefaultSizes = typeof defaultSizes
