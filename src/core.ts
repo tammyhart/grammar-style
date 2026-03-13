@@ -8,16 +8,10 @@ export interface ThemeConfig<
   options?: {
     breakpoints?: Record<string, string>;
   };
-  primitives?: P
-  semantics: S | ((primitives: P) => S)
-
-  modes?: 
-    | Record<string, DeepPartial<S>> 
-    | ((primitives: P, semantics: S) => Record<string, DeepPartial<S>>)
-
-  responsive?: 
-    | Record<string, DeepPartial<S>> 
-    | ((primitives: P, semantics: S) => Record<string, DeepPartial<S>>)
+  primitives?: P;
+  semantics: S;
+  modes?: Record<string, DeepPartial<S>>;
+  responsive?: Record<string, DeepPartial<S>>;
 }
 
 const isObject = (item: any): item is Record<string, any> => {
@@ -63,20 +57,9 @@ export const createTheme = <
     ...(config.primitives || ({} as P))
   } as P & { size: typeof defaultSizes }
 
-  const semantics =
-    typeof config.semantics === "function"
-      ? (config.semantics as any)(primitives)
-      : config.semantics
-
-  const modes =
-    typeof config.modes === "function"
-      ? (config.modes as any)(primitives, semantics)
-      : config.modes
-
-  const responsive =
-    typeof config.responsive === "function"
-      ? (config.responsive as any)(primitives, semantics)
-      : config.responsive
+  const semantics = config.semantics
+  const modes = config.modes
+  const responsive = config.responsive
 
   const optionsBreakpoints = config.options?.breakpoints || {}
   const breakpoints: Record<string, string> = { ...defaultBreakpoints }
