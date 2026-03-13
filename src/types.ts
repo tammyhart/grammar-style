@@ -68,11 +68,7 @@ export type DeepPartial<T> = T extends object
     }
   : Primitive
 
-export type PathBuilder<P, Prefix extends string = ""> = {
-  [K in keyof P]: P[K] extends object 
-    ? PathBuilder<P[K], `${Prefix}${K & string}.`>
-    : `${Prefix}${K & string}`
-}
+
 
 export type CleanPath<T extends string> = T extends `${infer P}.` ? P : T
 

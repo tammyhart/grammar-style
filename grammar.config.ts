@@ -31,17 +31,3 @@ export default defineGrammar({
     },
   },
 })
-
-export const genericConfig = defineGrammar({
-  primitives: {
-    stone: { 100: "#1A1A1A", 50: "#808080", 10: "#E6E6E6" },
-  },
-  semantics: p => ({
-    color: {
-      primary:  {
-        base: p.stone[100],
-      },
-      background: p.stone[10],
-    },
-  }),
-})

@@ -4,23 +4,18 @@ import type {
   SafeNoInfer,
   ValidateOverrides,
   Primitive,
-  TokenPath,
-  PathBuilder
+  TokenPath
 } from "./types"
 
 export interface BaseGrammarConfig<P> {
   primitives?: P;
-  semantics: object | ((primitives: PathBuilder<P>) => object);
-  modes?: object | ((primitives: PathBuilder<P>, semantics: any) => object);
-  responsive?: object | ((primitives: PathBuilder<P>, semantics: any) => object);
+  semantics: object;
+  modes?: object;
+  responsive?: object;
 }
 
 export type ExtractP<C> = C extends { primitives: infer P } ? P : any;
-export type ExtractS<C> = C extends { semantics: infer Sem }
-  ? Sem extends (...args: any[]) => infer R
-    ? R
-    : Sem
-  : any;
+export type ExtractS<C> = C extends { semantics: infer Sem } ? Sem : any;
 export type ExtractM<C> = C extends { modes?: infer M }
   ? M extends undefined
     ? {}
@@ -32,28 +27,15 @@ export type ExtractR<C> = C extends { responsive?: infer R }
     : R
   : {};
 
-export type ValidateModes<M, S, P> = M extends (...args: any[]) => infer R
-  ? (
-      primitives: P,
-      semantics: SafeNoInfer<S>
-    ) => {
-      [K in keyof R]: K extends string
-        ? ValidateOverrides<R[K], DeepPartialPaths<SafeNoInfer<S>, P>>
-        : never;
-    }
-  : {
-      [K in keyof M]: K extends string
-        ? ValidateOverrides<M[K], DeepPartialPaths<SafeNoInfer<S>, P>>
-        : never;
-    };
+export type ValidateModes<M, S, P> = {
+  [K in keyof M]: K extends string
+    ? ValidateOverrides<M[K], DeepPartialPaths<SafeNoInfer<S>, P>>
+    : never;
+};
 
 export type ValidatedConfig<P, C> = {
   primitives?: P;
-  semantics: C extends { semantics: infer Sem }
-    ? Sem extends (...args: any[]) => any
-      ? (primitives: P) => ExpectedShape<ExtractS<C>, P>
-      : ExpectedShape<ExtractS<C>, P>
-    : never;
+  semantics: ExpectedShape<ExtractS<C>, P>;
   modes?: ValidateModes<ExtractM<C>, ExtractS<C>, P>;
   responsive?: ValidateModes<ExtractR<C>, ExtractS<C>, P>;
 };
@@ -68,3 +50,7 @@ export function defineGrammar<
 >(config: C extends ValidatedConfig<P, C> ? C : ValidatedConfig<P, C>): Readonly<C & ValidatedConfig<P, C>> {
   return config as any;
 }
+
+export * from "./core"
+export { default as token } from "./token"
+export * from "./config"
