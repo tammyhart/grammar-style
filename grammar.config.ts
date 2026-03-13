@@ -1,4 +1,4 @@
-import { defineGrammar } from "./src"
+import { defineGrammar, defaultSizes } from "./src"
 
 export default defineGrammar({
   // 1. Define your raw primitive values
@@ -6,14 +6,12 @@ export default defineGrammar({
     color: {
       stone: { 100: "#1A1A1A", 50: "#808080", 10: "#E6E6E6" },
     },
-    spacing: {
-      16: "1rem",
-      24: "1.5rem",
-    },
+    // We import the pre-computed 4pt layout sizing scale (from 1 to 1000px natively formatted)
+    size: defaultSizes,
   },
 
   // 2. Semantics as a flat object parsing string dot-paths.
-  //    Try changing "color.stone.100" to "color.stone.99" to test type catching.
+  //    Try changing "size.192" to "size.193" to test type catching.
   semantics: {
     color: {
       primary: {
@@ -21,7 +19,10 @@ export default defineGrammar({
       },
       background: "color.stone.10",
     },
-    spacing: "spacing.24",
+    spacing: "size.24",
+    layout: {
+      hero: "size.192"
+    }
   },
 
   // 3. Optional mode overrides
@@ -38,7 +39,7 @@ export default defineGrammar({
 
   responsive: {
     lap: {
-      spacing: "spacing.16",
+      spacing: "size.16",
     },
   },
 })

@@ -1,44 +1,38 @@
-export const defaultSizes = {
-  1: "0.0625rem",
-  2: "0.125rem",
-  4: "0.25rem",
-  8: "0.5rem",
-  10: "0.625rem",
-  12: "0.75rem",
-  14: "0.875rem",
-  16: "1rem",
-  20: "1.25rem",
-  24: "1.5rem",
-  28: "1.75rem",
-  32: "2rem",
-  36: "2.25rem",
-  40: "2.5rem",
-  48: "3rem",
-  52: "3.25rem",
-  56: "3.5rem",
-  60: "3.75rem",
-  64: "4rem",
-  72: "4.5rem",
-  76: "4.75rem",
-  80: "5rem",
-  88: "5.5rem",
-  96: "6rem",
-  104: "6.5rem",
-  112: "7rem",
-  120: "7.5rem",
-  128: "8rem",
-  136: "8.5rem",
-  144: "9rem",
-  152: "9.5rem",
-  160: "10rem",
-  168: "10.5rem",
-  176: "11rem",
-  192: "12rem",
-  200: "12.5rem",
-  216: "13.5rem",
-  240: "15rem",
-  280: "17.5rem",
-} as const
+type ValidSmallSize = 1 | 2 | 4 | 6 | 8 | 10 | 12 | 14 | 16;
+
+type EvenDigit = '0' | '2' | '4' | '6' | '8';
+type OddDigit = '1' | '3' | '5' | '7' | '9';
+
+type NonZero = '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
+
+// A prefix for numbers >= 100
+type Prefix = '' | NonZero | `${NonZero}${bigint}`;
+
+/**
+ * Validizes sizes against the 4pt grid layout constraints.
+ */
+export type ValidSizeStr = 
+  | `${ValidSmallSize}`
+  | `${Prefix}${EvenDigit}${ '0' | '4' | '8' }` 
+  | `${Prefix}${OddDigit}${ '2' | '6' }`;
+
+const generateSizes = () => {
+  const sizes: Record<string, string> = {};
+
+  const smalls: ValidSmallSize[] = [1, 2, 4, 6, 8, 10, 12, 14, 16];
+  for (const s of smalls) {
+    sizes[s] = `${s / 16}rem`;
+  }
+
+  // Support multiples of 4 from 20 to 1000px
+  for (let s = 20; s <= 1000; s += 4) {
+    sizes[s] = `${s / 16}rem`;
+  }
+
+  return sizes as Record<ValidSizeStr, string>;
+};
+
+export const defaultSizes = generateSizes();
 
 export const defaultBreakpoints = {
   palm: "37.5rem",
