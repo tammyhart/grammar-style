@@ -1,5 +1,5 @@
 import type { ThemeConfig } from "./types"
-import { defaultSizes, defaultBreakpoints } from "./defaults"
+import { defaultSizes, defaultBreakpoints, defaultOpacities } from "./defaults"
 const isObject = (item: unknown): item is Record<string, unknown> => {
   return !!item && typeof item === "object" && !Array.isArray(item)
 }
@@ -148,6 +148,16 @@ export const createTheme = <
         const num = parseFloat(valStr)
         breakpoints[`${key}Max`] = `${num - 0.0625}rem`
       }
+    }
+  })
+
+  const optionsOpacities = config.options?.opacities || []
+
+  optionsOpacities.forEach((val: number) => {
+    if (val > 100 || val < 0) {
+      throw new Error(
+        `Grammr Style: Opacity values must be between 0 and 100. Found '${val}' in options.opacities.`
+      )
     }
   })
 

@@ -5,6 +5,7 @@ export default defineGrammar({
     breakpoints: {
       palm: "size.500",
     },
+    opacities: [5, 15, 33, 66, 100],
   },
 
   // 1. Define your raw primitive values
@@ -57,6 +58,12 @@ export default defineGrammar({
       },
     },
     spacing: "size.24",
+
+    /* TODO: 
+    effect: {
+      blur: "blur(size.16)"
+    },
+    */
   },
 
   // 3. Optional mode overrides
@@ -80,8 +87,11 @@ export default defineGrammar({
   },
 
   responsive: {
-    lap: {
-      spacing: "size.32",
+    palm: {
+      spacing: "size.1",
+    },
+    palmMax: {
+      spacing: "size.1",
     },
   },
 })

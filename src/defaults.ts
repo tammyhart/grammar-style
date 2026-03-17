@@ -72,3 +72,15 @@ export type DefaultSizes = typeof defaultSizes
 
 export const defaultModes = ["dark", "light"] as const
 export type ValidModeName = typeof defaultModes[number]
+
+export const defaultOpacities = {
+  10: 0.1,
+  20: 0.2,
+  40: 0.4,
+  60: 0.6,
+  80: 0.8,
+  100: 1,
+} as const;
+
+export type DefaultOpacities = typeof defaultOpacities;
+export type ValidOpacityName = keyof DefaultOpacities | (string | number);

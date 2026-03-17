@@ -6,9 +6,10 @@ import type { BaseGrammarConfig, ValidatedConfig } from "./types"
  */
 export function defineGrammar<
   P extends Record<string, unknown>,
-  const C extends BaseGrammarConfig<P>
->(config: C extends ValidatedConfig<P, C> ? C : ValidatedConfig<P, C>): Readonly<C & ValidatedConfig<P, C>> {
-  return config as unknown as Readonly<C & ValidatedConfig<P, C>>;
+  const C extends BaseGrammarConfig<P>,
+  const O extends readonly number[] = C extends { options?: { opacities?: infer Ops extends readonly number[] } } ? Ops : []
+>(config: C extends ValidatedConfig<P, C, O> ? C : ValidatedConfig<P, C, O>): Readonly<C & ValidatedConfig<P, C, O>> {
+  return config as unknown as Readonly<C & ValidatedConfig<P, C, O>>;
 }
 
 export { createTheme } from "./core"
@@ -16,8 +17,8 @@ export { default as token } from "./token"
 export { loadConfig } from "./config"
 
 // Expose defaults directly for manual user reference if needed
-export { defaultBreakpoints, defaultSizes } from "./defaults"
+export { defaultBreakpoints, defaultSizes, defaultModes, defaultOpacities } from "./defaults"
 
 // Expose helpful utility types for external typed setups
 export type { ThemeConfig, TokenPath, DeepPartial } from "./types"
-export type { ValidSizeStr, BreakpointName } from "./defaults"
+export type { ValidSizeStr, BreakpointName, ValidModeName, ValidOpacityName } from "./defaults"

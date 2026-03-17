@@ -87,16 +87,17 @@ export type StrictDeepPartial<Shape, Input> = Input extends object
     }
   : DeepPartial<Shape>
 
-import type { DefaultSizes, BreakpointName, BaseBreakpointName, ValidBreakpointValue, ValidModeName } from "./defaults"
+import type { DefaultSizes, BreakpointName, BaseBreakpointName, ValidBreakpointValue, ValidModeName, DefaultOpacities } from "./defaults"
 
 export interface ThemeConfig<
   P extends Record<string, unknown>,
   S extends Record<string, unknown>,
 > {
   options?: {
-    content?: string[];
+    content?: readonly string[];
     breakpoints?: Record<string, string>;
-    modes?: string[];
+    modes?: readonly string[];
+    opacities?: readonly number[];
   };
   primitives?: P;
   semantics: S;
@@ -106,9 +107,10 @@ export interface ThemeConfig<
 
 export interface BaseGrammarConfig<P> {
   options?: {
-    content?: string[];
+    content?: readonly string[];
     breakpoints?: Record<string, string>;
     modes?: readonly string[];
+    opacities?: readonly number[];
   };
   primitives?: P;
   semantics: object;
@@ -135,17 +137,52 @@ export type ExtractModeOptions<C> = C extends { options?: { modes?: infer M } }
     : never
   : never;
 
-export type HasCustomModes<C> = ExtractModeOptions<C> extends never ? false : true;
+export type HasCustomModes<C> = [ExtractModeOptions<C>] extends [never] ? false : true;
 
 export type AllowedModes<C> = HasCustomModes<C> extends true
   ? ExtractModeOptions<C>
   : ValidModeName;
+
+export type ExtractO<C> = C extends { options?: { opacities?: infer O } }
+  ? O extends ReadonlyArray<number>
+    ? O[number]
+    : never
+  : never;
+
+export type CustomOpacityKeys<C> = ExtractO<C>;
+export type HasCustomOpacities<C> = [CustomOpacityKeys<C>] extends [never] ? false : true;
+export type HasOnlyDefaultOpacityOverrides<C> = Exclude<CustomOpacityKeys<C>, keyof DefaultOpacities> extends never ? true : false;
+
+export type AllowedOpacities<C> = HasCustomOpacities<C> extends true
+  ? HasOnlyDefaultOpacityOverrides<C> extends true
+    ? keyof DefaultOpacities
+    : CustomOpacityKeys<C>
+  : keyof DefaultOpacities;
 
 export type ValidateModes<M, S, P, C> = {
   [K in keyof M]: K extends AllowedModes<C>
     ? ValidateOverrides<M[K], DeepPartialPaths<SafeNoInfer<S>, P>>
     : "Error: Mode name must be a valid default mode ('dark', 'light') or defined in options.modes";
 };
+
+type Digit = "0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9";
+export type IsValidOpacityWhole<T extends string> = 
+  T extends "100" ? true :
+  T extends `${Digit}${Digit}${Digit}${string}` ? false :
+  true;
+
+export type ValidateOpacityValue<T extends number> = 
+  `${T}` extends `-${string}` 
+    ? "Error: Opacity cannot be less than 0"
+    : `${T}` extends `${infer Whole}.${string}`
+      ? IsValidOpacityWhole<Whole> extends true ? T : "Error: Opacity must be <= 100"
+      : IsValidOpacityWhole<`${T}`> extends true ? T : "Error: Opacity must be <= 100";
+
+export type ValidateOpacitiesArray<O extends readonly any[]> = {
+  readonly [K in keyof O]: O[K] extends number ? ValidateOpacityValue<O[K]> : O[K]
+};
+
+export type ExtractRawO<C> = C extends { options?: { opacities?: infer O } } ? O : undefined;
 
 export type CorePrimitives = {
   size: DefaultSizes;
@@ -183,9 +220,16 @@ export type ValidateResponsive<R, S, P, C> = {
     : "Error: Responsive key must be a valid base breakpoint name. Max breakpoints are generated natively.";
 };
 
-export type ValidatedConfig<P, C> = {
+export type ValidatedConfig<
+  P, 
+  C, 
+  O extends readonly number[] = C extends { options?: { opacities?: infer Ops extends readonly number[] } } ? Ops : []
+> = {
   options?: {
+    content?: readonly string[];
     breakpoints?: ValidateBreakpoints<ExtractB<C>>;
+    modes?: readonly string[];
+    opacities?: ValidateOpacitiesArray<O>;
   };
   primitives?: P;
   semantics: ExpectedShape<ExtractS<C>, P & CorePrimitives>;
