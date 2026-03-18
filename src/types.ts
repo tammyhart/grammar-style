@@ -1,74 +1,113 @@
-export type Primitive = string | number | boolean | null | undefined;
+export type Primitive = string | number | boolean | null | undefined
 
-export type Leaves<T> = T extends Primitive
-  ? ""
+export type Leaves<T> =
+  T extends Primitive ? ""
   : {
-      [K in keyof T]: K extends string | number
-        ? T[K] extends Primitive
-          ? `${K}`
-          : `${K}.${Leaves<T[K]>}`
-        : never
+      [K in keyof T]: K extends string | number ?
+        T[K] extends Primitive ?
+          `${K}`
+        : `${K}.${Leaves<T[K]>}`
+      : never
     }[keyof T]
 
-export type PathToDots<T> = T extends Primitive
-  ? never
+export type PathToDots<T> =
+  T extends Primitive ? never
   : {
-      [K in keyof T & (string | number)]: T[K] extends Primitive
-        ? `${K}`
-        : `${K}.${PathToDots<T[K]>}` extends infer S
-          ? S extends string
-            ? S
-            : never
-          : never;
-    }[keyof T & (string | number)];
+      [K in keyof T & (string | number)]: T[K] extends Primitive ? `${K}`
+      : `${K}.${PathToDots<T[K]>}` extends infer S ?
+        S extends string ?
+          S
+        : never
+      : never
+    }[keyof T & (string | number)]
 
 export type SemanticObject<P> = {
-  [key: string]: SemanticObject<P> | PathToDots<P>;
-};
+  [key: string]: SemanticObject<P> | PathToDots<P>
+}
 
-export type DeepPartialPaths<T, P> = T extends object
-  ? {
-      [K in keyof T]?: DeepPartialPaths<T[K], P>;
+export type DeepPartialPaths<T, P, Ops extends string | number = ValidOpacityName> =
+  T extends object ?
+    {
+      [K in keyof T]?: DeepPartialPaths<T[K], P, Ops>
     }
-  : T extends string
-    ? PathToDots<P>
-    : T;
+  : T extends PathToDots<P> ? PathToDots<P>
+  : T extends string ? ValidateString<T, P, false, Ops>
+  : T extends number ? number
+  : T
 
-export type ValidateOverrides<Input, Shape> = Input extends object
-  ? {
-      [K in keyof Input]: K extends keyof NonNullable<Shape>
-        ? Input[K] extends object
-          ? ValidateOverrides<Input[K], NonNullable<Shape>[K]>
-          : NonNullable<Shape>[K]
-        : "Error: This property does not exist in your semantics shape";
+export type ValidateOverrides<Input, Shape> =
+  Input extends object ?
+    {
+      [K in keyof Input]: K extends keyof NonNullable<Shape> ?
+        Input[K] extends object ?
+          ValidateOverrides<Input[K], NonNullable<Shape>[K]>
+        : NonNullable<Shape>[K]
+      : "Error: This property does not exist in your semantics shape"
     }
-  : Shape;
+  : Shape
 
 export type ValidatePaths<Input, P> = {
-  [K in keyof Input]: Input[K] extends string
-    ? Input[K] extends PathToDots<P>
-      ? Input[K]
-      : "Error: Invalid primitive path"
-    : Input[K] extends object
-      ? ValidatePaths<Input[K], P>
-      : Input[K];
-};
+  [K in keyof Input]: Input[K] extends string ?
+    Input[K] extends PathToDots<P> ?
+      Input[K]
+    : "Error: Invalid primitive path"
+  : Input[K] extends object ? ValidatePaths<Input[K], P>
+  : Input[K]
+}
 
-export type ExpectedShape<Input, P> = {
-  [K in keyof Input]: Input[K] extends object
-    ? ExpectedShape<Input[K], P>
-    : PathToDots<P>
-};
+export type HasColorValue<S extends string> = S extends `#${string}` ? true
+  : S extends `rgb(${string}` ? true
+  : S extends `rgba(${string}` ? true
+  : S extends `hsl(${string}` ? true
+  : S extends `hsla(${string}` ? true
+  : false
 
-export type SafeNoInfer<T> = [T][T extends unknown ? 0 : never];
+export type ConfigOps<O extends readonly number[]> = O extends [] ? ValidOpacityName : O[number]
 
-export type DeepPartial<T> = T extends object
-  ? {
+export type ValidToken<S extends string, P, IsPrimitive extends boolean = false, Ops extends string | number = ValidOpacityName> = 
+  S extends "" ? true
+  : S extends `${string}px${string}` ? `Error: 'px' values are not allowed: '${S}'`
+  : S extends PathToDots<P> ? true
+  : S extends `-${infer Rest}` ? (Rest extends PathToDots<P> ? true : `Error: invalid negative primitive path: '${Rest}'`)
+  : S extends `${infer Prefix}/${infer _Opacity}` ? (Prefix extends PathToDots<P> ? (_Opacity extends `${Ops}` ? true : `Error: opacity '${_Opacity}' is not allowed in options.opacities`) : `Error: invalid primitive path before opacity: '${Prefix}'`)
+  : S extends `blur(${infer Inner})` ? (Inner extends PathToDots<P> ? true : `Error: invalid primitive path inside blur: '${Inner}'`)
+  : S extends `${string}.${string}` ? (
+      S extends `${"0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"}${string}` ? true : `Error: invalid token: '${S}'`
+    )
+  : IsPrimitive extends false ? (HasColorValue<S> extends true ? `Error: literal colors are not allowed outside primitives: '${S}'` : `Error: invalid token: '${S}'`)
+  : true
+
+export type ValidateString<S extends string, P, IsPrimitive extends boolean = false, Ops extends string | number = ValidOpacityName> = string extends S ? S
+  : S extends `${infer First}, ${infer Rest}` ? (ValidateString<First, P, IsPrimitive, Ops> extends First ? (ValidateString<Rest, P, IsPrimitive, Ops> extends Rest ? S : ValidateString<Rest, P, IsPrimitive, Ops>) : ValidateString<First, P, IsPrimitive, Ops>)
+  : S extends `${infer First},${infer Rest}` ? (ValidateString<First, P, IsPrimitive, Ops> extends First ? (ValidateString<Rest, P, IsPrimitive, Ops> extends Rest ? S : ValidateString<Rest, P, IsPrimitive, Ops>) : ValidateString<First, P, IsPrimitive, Ops>)
+  : S extends `${infer First} ${infer Rest}` ? (ValidToken<First, P, IsPrimitive, Ops> extends true ? (ValidateString<Rest, P, IsPrimitive, Ops> extends Rest ? S : ValidateString<Rest, P, IsPrimitive, Ops>) : ValidToken<First, P, IsPrimitive, Ops> extends string ? ValidToken<First, P, IsPrimitive, Ops> : `Error: invalid token: '${First}'`)
+  : ValidToken<S, P, IsPrimitive, Ops> extends true ? S
+  : ValidToken<S, P, IsPrimitive, Ops> extends string ? ValidToken<S, P, IsPrimitive, Ops>
+  : `Error: invalid token: '${S}'`
+
+export type ValidateObject<Input, P, IsPrimitive extends boolean = false, Ops extends string | number = ValidOpacityName> = {
+  [K in keyof Input]: Input[K] extends object ? ValidateObject<Input[K], P, IsPrimitive, Ops>
+  : Input[K] extends string ? ValidateString<Input[K], P, IsPrimitive, Ops>
+  : Input[K] extends number ? number
+  : Input[K]
+}
+
+export type ExpectedShape<Input, P, Ops extends string | number = ValidOpacityName> = {
+  [K in keyof Input]: Input[K] extends object ? ExpectedShape<Input[K], P, Ops>
+  : Input[K] extends PathToDots<P> ? PathToDots<P>
+  : Input[K] extends string ? ValidateString<Input[K], P, false, Ops>
+  : Input[K] extends number ? number
+  : PathToDots<P>
+}
+
+export type SafeNoInfer<T> = [T][T extends unknown ? 0 : never]
+
+export type DeepPartial<T> =
+  T extends object ?
+    {
       [P in keyof T]?: DeepPartial<T[P]>
     }
   : Primitive
-
-
 
 export type CleanPath<T extends string> = T extends `${infer P}.` ? P : T
 
@@ -79,160 +118,195 @@ export type GrammarRegistry = Register extends { theme: infer T } ? T : {}
 export type TokenPath = CleanPath<Leaves<GrammarRegistry>>
 
 // Force exact match by returning never if the user supplies a key that does not exist in the shape
-export type StrictDeepPartial<Shape, Input> = Input extends object
-  ? {
-      [K in keyof Input]: K extends keyof Shape
-        ? StrictDeepPartial<Shape[K], Input[K]>
-        : never // This `never` forces a type error
+export type StrictDeepPartial<Shape, Input> =
+  Input extends object ?
+    {
+      [K in keyof Input]: K extends keyof Shape ?
+        StrictDeepPartial<Shape[K], Input[K]>
+      : never // This `never` forces a type error
     }
   : DeepPartial<Shape>
 
-import type { DefaultSizes, BreakpointName, BaseBreakpointName, ValidBreakpointValue, ValidModeName, DefaultOpacities } from "./defaults"
+import type {
+  DefaultSizes,
+  BreakpointName,
+  BaseBreakpointName,
+  ValidBreakpointValue,
+  ValidModeName,
+  DefaultOpacities,
+  ValidOpacityName,
+} from "./defaults"
 
 export interface ThemeConfig<
   P extends Record<string, unknown>,
   S extends Record<string, unknown>,
 > {
   options?: {
-    content?: readonly string[];
-    breakpoints?: Record<string, string>;
-    modes?: readonly string[];
-    opacities?: readonly number[];
-  };
-  primitives?: P;
-  semantics: S;
-  modes?: Record<string, DeepPartial<S>>;
-  responsive?: Record<string, DeepPartial<S>>;
+    content?: readonly string[]
+    breakpoints?: Record<string, string>
+    modes?: readonly string[]
+    opacities?: readonly number[]
+  }
+  primitives?: P
+  semantics: S
+  modes?: Record<string, DeepPartial<S>>
+  responsive?: Record<string, DeepPartial<S>>
 }
 
 export interface BaseGrammarConfig<P> {
   options?: {
-    content?: readonly string[];
-    breakpoints?: Record<string, string>;
-    modes?: readonly string[];
-    opacities?: readonly number[];
-  };
-  primitives?: P;
-  semantics: object;
-  modes?: object;
-  responsive?: object;
+    content?: readonly string[]
+    breakpoints?: Record<string, string>
+    modes?: readonly string[]
+    opacities?: readonly number[]
+  }
+  primitives?: P
+  semantics: object
+  modes?: object
+  responsive?: object
 }
 
-export type ExtractP<C> = C extends { primitives: infer P } ? P : unknown;
-export type ExtractS<C> = C extends { semantics: infer Sem } ? Sem : unknown;
-export type ExtractM<C> = C extends { modes?: infer M }
-  ? M extends undefined
-    ? {}
+export type ExtractP<C> = C extends { primitives: infer P } ? P : unknown
+export type ExtractS<C> = C extends { semantics: infer Sem } ? Sem : unknown
+export type ExtractM<C> =
+  C extends { modes?: infer M } ?
+    M extends undefined ?
+      {}
     : M
-  : {};
-export type ExtractR<C> = C extends { responsive?: infer R }
-  ? R extends undefined
-    ? {}
+  : {}
+export type ExtractR<C> =
+  C extends { responsive?: infer R } ?
+    R extends undefined ?
+      {}
     : R
-  : {};
+  : {}
 
-export type ExtractModeOptions<C> = C extends { options?: { modes?: infer M } }
-  ? M extends ReadonlyArray<string>
-    ? M[number]
+export type ExtractModeOptions<C> =
+  C extends { options?: { modes?: infer M } } ?
+    M extends ReadonlyArray<string> ?
+      M[number]
     : never
-  : never;
+  : never
 
-export type HasCustomModes<C> = [ExtractModeOptions<C>] extends [never] ? false : true;
+export type HasCustomModes<C> =
+  [ExtractModeOptions<C>] extends [never] ? false : true
 
-export type AllowedModes<C> = HasCustomModes<C> extends true
-  ? ExtractModeOptions<C>
-  : ValidModeName;
+export type AllowedModes<C> =
+  HasCustomModes<C> extends true ? ExtractModeOptions<C> : ValidModeName
 
-export type ExtractO<C> = C extends { options?: { opacities?: infer O } }
-  ? O extends ReadonlyArray<number>
-    ? O[number]
+export type ExtractO<C> =
+  C extends { options?: { opacities?: infer O } } ?
+    O extends ReadonlyArray<number> ?
+      O[number]
     : never
-  : never;
+  : never
 
-export type CustomOpacityKeys<C> = ExtractO<C>;
-export type HasCustomOpacities<C> = [CustomOpacityKeys<C>] extends [never] ? false : true;
-export type HasOnlyDefaultOpacityOverrides<C> = Exclude<CustomOpacityKeys<C>, keyof DefaultOpacities> extends never ? true : false;
+export type CustomOpacityKeys<C> = ExtractO<C>
+export type HasCustomOpacities<C> =
+  [CustomOpacityKeys<C>] extends [never] ? false : true
+export type HasOnlyDefaultOpacityOverrides<C> =
+  Exclude<CustomOpacityKeys<C>, keyof DefaultOpacities> extends never ? true
+  : false
 
-export type AllowedOpacities<C> = HasCustomOpacities<C> extends true
-  ? HasOnlyDefaultOpacityOverrides<C> extends true
-    ? keyof DefaultOpacities
+export type AllowedOpacities<C> =
+  HasCustomOpacities<C> extends true ?
+    HasOnlyDefaultOpacityOverrides<C> extends true ?
+      keyof DefaultOpacities
     : CustomOpacityKeys<C>
-  : keyof DefaultOpacities;
+  : keyof DefaultOpacities
 
 export type ValidateModes<M, S, P, C> = {
-  [K in keyof M]: K extends AllowedModes<C>
-    ? ValidateOverrides<M[K], DeepPartialPaths<SafeNoInfer<S>, P>>
-    : "Error: Mode name must be a valid default mode ('dark', 'light') or defined in options.modes";
-};
+  [K in keyof M]: K extends AllowedModes<C> ?
+    ValidateOverrides<M[K], DeepPartialPaths<SafeNoInfer<S>, P, AllowedOpacities<C> & (string | number)>>
+  : "Error: Mode name must be a valid default mode ('dark', 'light') or defined in options.modes"
+}
 
-type Digit = "0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9";
-export type IsValidOpacityWhole<T extends string> = 
-  T extends "100" ? true :
-  T extends `${Digit}${Digit}${Digit}${string}` ? false :
-  true;
+type Digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+export type IsValidOpacityWhole<T extends string> =
+  T extends "100" ? true
+  : T extends `${Digit}${Digit}${Digit}${string}` ? false
+  : true
 
-export type ValidateOpacityValue<T extends number> = 
-  `${T}` extends `-${string}` 
-    ? "Error: Opacity cannot be less than 0"
-    : `${T}` extends `${infer Whole}.${string}`
-      ? IsValidOpacityWhole<Whole> extends true ? T : "Error: Opacity must be <= 100"
-      : IsValidOpacityWhole<`${T}`> extends true ? T : "Error: Opacity must be <= 100";
+export type ValidateOpacityValue<T extends number> =
+  `${T}` extends `-${string}` ? "Error: Opacity cannot be less than 0"
+  : `${T}` extends `${infer Whole}.${string}` ?
+    IsValidOpacityWhole<Whole> extends true ?
+      T
+    : "Error: Opacity must be <= 100"
+  : IsValidOpacityWhole<`${T}`> extends true ? T
+  : "Error: Opacity must be <= 100"
 
 export type ValidateOpacitiesArray<O extends readonly any[]> = {
-  readonly [K in keyof O]: O[K] extends number ? ValidateOpacityValue<O[K]> : O[K]
-};
+  readonly [K in keyof O]: O[K] extends number ? ValidateOpacityValue<O[K]>
+  : O[K]
+}
 
-export type ExtractRawO<C> = C extends { options?: { opacities?: infer O } } ? O : undefined;
+export type ExtractRawO<C> =
+  C extends { options?: { opacities?: infer O } } ? O : undefined
 
 export type CorePrimitives = {
-  size: DefaultSizes;
-};
+  size: DefaultSizes
+}
 
 export type ValidateBreakpoints<B> = {
-  [K in keyof B]: K extends `${string}Max`
-    ? "Error: Max breakpoints are auto-generated. Please define base names only."
-    : B[K] extends ValidBreakpointValue
-      ? B[K]
-      : ValidBreakpointValue | "Error: Breakpoint values must be a valid size dot-path (e.g. 'size.100') or a rem value (e.g. '40rem')"
-};
+  [K in keyof B]: K extends `${string}Max` ?
+    "Error: Max breakpoints are auto-generated. Please define base names only."
+  : B[K] extends ValidBreakpointValue ? B[K]
+  : | ValidBreakpointValue
+    | "Error: Breakpoint values must be a valid size dot-path (e.g. 'size.100') or a rem value (e.g. '40rem')"
+}
 
-export type ExtractB<C> = C extends { options?: { breakpoints?: infer B } }
-  ? B extends undefined
-    ? {}
+export type ExtractB<C> =
+  C extends { options?: { breakpoints?: infer B } } ?
+    B extends undefined ?
+      {}
     : B
-  : {};
+  : {}
 
-export type CustomKeys<C> = keyof ExtractB<C> & string;
-export type HasCustomBreakpoints<C> = CustomKeys<C> extends never ? false : true;
-export type HasOnlyDefaultOverrides<C> = Exclude<CustomKeys<C>, BaseBreakpointName> extends never ? true : false;
+export type CustomKeys<C> = keyof ExtractB<C> & string
+export type HasCustomBreakpoints<C> = CustomKeys<C> extends never ? false : true
+export type HasOnlyDefaultOverrides<C> =
+  Exclude<CustomKeys<C>, BaseBreakpointName> extends never ? true : false
 
-export type AllowedBaseBreakpoints<C> = HasCustomBreakpoints<C> extends true
-  ? HasOnlyDefaultOverrides<C> extends true
-    ? BaseBreakpointName
+export type AllowedBaseBreakpoints<C> =
+  HasCustomBreakpoints<C> extends true ?
+    HasOnlyDefaultOverrides<C> extends true ?
+      BaseBreakpointName
     : CustomKeys<C>
-  : BaseBreakpointName;
+  : BaseBreakpointName
 
-export type AllowedBreakpoints<C> = AllowedBaseBreakpoints<C> | `${AllowedBaseBreakpoints<C>}Max`;
+export type AllowedBreakpoints<C> =
+  | AllowedBaseBreakpoints<C>
+  | `${AllowedBaseBreakpoints<C>}Max`
 
 export type ValidateResponsive<R, S, P, C> = {
-  [K in keyof R]: K extends AllowedBreakpoints<C>
-    ? ValidateOverrides<R[K], DeepPartialPaths<SafeNoInfer<S>, P>>
-    : "Error: Responsive key must be a valid base breakpoint name. Max breakpoints are generated natively.";
-};
+  [K in keyof R]: K extends AllowedBreakpoints<C> ?
+    ValidateOverrides<R[K], DeepPartialPaths<SafeNoInfer<S>, P, AllowedOpacities<C> & (string | number)>>
+  : "Error: Responsive key must be a valid base breakpoint name. Max breakpoints are generated natively."
+}
 
 export type ValidatedConfig<
-  P, 
-  C, 
-  O extends readonly number[] = C extends { options?: { opacities?: infer Ops extends readonly number[] } } ? Ops : []
+  P,
+  C,
+  O extends readonly number[] = C extends (
+    { options?: { opacities?: infer Ops extends readonly number[] } }
+  ) ?
+    Ops
+  : [],
 > = {
   options?: {
-    content?: readonly string[];
-    breakpoints?: ValidateBreakpoints<ExtractB<C>>;
-    modes?: readonly string[];
-    opacities?: ValidateOpacitiesArray<O>;
-  };
-  primitives?: P;
-  semantics: ExpectedShape<ExtractS<C>, P & CorePrimitives>;
-  modes?: ValidateModes<ExtractM<C>, ExtractS<C>, P & CorePrimitives, C>;
-  responsive?: ValidateResponsive<ExtractR<C>, ExtractS<C>, P & CorePrimitives, C>;
-};
+    content?: readonly string[]
+    breakpoints?: ValidateBreakpoints<ExtractB<C>>
+    modes?: readonly string[]
+    opacities?: ValidateOpacitiesArray<O>
+  }
+  primitives?: ValidateObject<P, P & CorePrimitives, true, AllowedOpacities<C> & (string | number)>
+  semantics: ExpectedShape<ExtractS<C>, P & CorePrimitives, AllowedOpacities<C> & (string | number)>
+  modes?: ValidateModes<ExtractM<C>, ExtractS<C>, P & CorePrimitives, C>
+  responsive?: ValidateResponsive<
+    ExtractR<C>,
+    ExtractS<C>,
+    P & CorePrimitives,
+    C
+  >
+}

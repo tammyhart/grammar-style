@@ -10,12 +10,14 @@ const createCssVars = (
   obj: Record<string, unknown>,
   prefix: string[] = [],
   isReference = false,
+  primitives?: Record<string, unknown>,
+  customOpacitiesOut?: Record<string, string>
 ): string => {
   return Object.entries(obj).reduce((acc, [key, value]) => {
     const newPath = [...prefix, key]
 
     if (isObject(value)) {
-      return acc + createCssVars(value, newPath, isReference)
+      return acc + createCssVars(value, newPath, isReference, primitives, customOpacitiesOut)
     }
 
     if (typeof value === "string" && value.includes("px")) {
@@ -24,16 +26,83 @@ const createCssVars = (
       )
     }
 
-    const finalValue =
-      isReference && typeof value === "string" && value.includes(".") ?
-        `var(--${value.replace(/\./g, "-")})`
-      : value
+    let finalValue = value;
+    if (typeof value === "string" && value.includes(".")) {
+      finalValue = value.replace(
+        /(-?)([a-zA-Z][a-zA-Z0-9_\-]*\.[a-zA-Z0-9_\-\.]+)(\/([0-9]+))?/g,
+        (match, isNegative, tokenTarget, hasOpacity, opacityValue) => {
+          const cssVar = `var(--${tokenTarget.replace(/\./g, "-")})`;
+          let result = cssVar;
+          if (hasOpacity) {
+            let rgbaResolved = false;
+            if (primitives && opacityValue) {
+              const parts = tokenTarget.split('.');
+              let current: any = primitives;
+              for (const part of parts) {
+                if (current && typeof current === 'object') current = current[part];
+                else { current = undefined; break; }
+              }
+              if (typeof current === 'string') {
+                const a = Number(opacityValue) / 100;
+                let convertedString: string | null = null;
+                
+                if (current.startsWith('#')) {
+                  let hex = current.substring(1);
+                  if (hex.length === 3) hex = hex.split('').map(x => x + x).join('');
+                  if (hex.length === 6 || hex.length === 8) {
+                    const r = parseInt(hex.slice(0, 2), 16);
+                    const g = parseInt(hex.slice(2, 4), 16);
+                    const b = parseInt(hex.slice(4, 6), 16);
+                    convertedString = `rgba(${r}, ${g}, ${b}, ${a})`;
+                  }
+                } else if (current.startsWith('hsl') || current.startsWith('rgb')) {
+                  const inner = current.match(/\((.*)\)/)?.[1];
+                  if (inner) {
+                    const parts = inner.split(/[\s,]+/).filter(Boolean);
+                    if (parts.length >= 3) {
+                       const p1 = parts[0];
+                       const p2 = parts[1];
+                       const p3 = parts[2];
+                       if (current.startsWith('hsl')) {
+                         convertedString = `hsla(${p1}, ${p2}, ${p3}, ${a})`;
+                       } else {
+                         convertedString = `rgba(${p1}, ${p2}, ${p3}, ${a})`;
+                       }
+                    }
+                  }
+                }
+
+                if (convertedString) {
+                  if (customOpacitiesOut) {
+                    const customVarName = `--${tokenTarget.replace(/\./g, "-")}-${opacityValue}`;
+                    customOpacitiesOut[customVarName] = convertedString;
+                    result = `var(${customVarName})`;
+                  } else {
+                    result = convertedString;
+                  }
+                  rgbaResolved = true;
+                }
+              }
+            }
+            if (!rgbaResolved) {
+              throw new Error(`Grammr Style: Unable to parse primitive '${tokenTarget}' for opacity transform. Supported formats are Hex, rgb(), rgba(), hsl(), hsla().`);
+            }
+          }
+          if (isNegative) {
+            result = `calc(${cssVar} * -1)`;
+          }
+          return result;
+        }
+      );
+    }
 
     return acc + `${toCssVar(newPath)}: ${finalValue};\n`
   }, "")
 }
 
-const getUsedSizes = (config: ThemeConfig<Record<string, unknown>, Record<string, unknown>>): Set<string> => {
+const getUsedSizes = (
+  config: ThemeConfig<Record<string, unknown>, Record<string, unknown>>,
+): Set<string> => {
   const used = new Set<string>()
 
   const scanObj = (obj: unknown) => {
@@ -51,8 +120,20 @@ const getUsedSizes = (config: ThemeConfig<Record<string, unknown>, Record<string
   scanObj(config.modes)
   scanObj(config.responsive)
 
-  let fs: { existsSync: (path: string) => boolean; statSync: (path: string) => { isDirectory: () => boolean }; readdirSync: (path: string) => string[]; readFileSync: (path: string, options: string) => string } | undefined
-  let path: { join: (...paths: string[]) => string; resolve: (...paths: string[]) => string } | undefined
+  let fs:
+    | {
+        existsSync: (path: string) => boolean
+        statSync: (path: string) => { isDirectory: () => boolean }
+        readdirSync: (path: string) => string[]
+        readFileSync: (path: string, options: string) => string
+      }
+    | undefined
+  let path:
+    | {
+        join: (...paths: string[]) => string
+        resolve: (...paths: string[]) => string
+      }
+    | undefined
   try {
     fs = eval(`require('node:fs')`)
     path = eval(`require('node:path')`)
@@ -127,20 +208,22 @@ export const createTheme = <
   config: ThemeConfig<P, S>,
 ) => {
   const optionsBreakpoints = config.options?.breakpoints || {}
-  
+
   const hasOnlyDefaultOverrides = Object.keys(optionsBreakpoints).every(
-    key => key in defaultBreakpoints
+    key => key in defaultBreakpoints,
   )
 
-  const breakpoints: Record<string, string> = hasOnlyDefaultOverrides 
-    ? { ...defaultBreakpoints } 
-    : {}
+  const breakpoints: Record<string, string> =
+    hasOnlyDefaultOverrides ? { ...defaultBreakpoints } : {}
 
   Object.entries(optionsBreakpoints).forEach(([key, value]) => {
     breakpoints[key] = value as string
 
     // Auto-generate Max counterpart if not explicitly provided
-    if (!key.endsWith("Max") && !(optionsBreakpoints as Record<string, string>)[`${key}Max`]) {
+    if (
+      !key.endsWith("Max") &&
+      !(optionsBreakpoints as Record<string, string>)[`${key}Max`]
+    ) {
       const valStr = value as string
       if (valStr.startsWith("size.")) {
         breakpoints[`${key}Max`] = `${valStr} - size.1`
@@ -156,7 +239,7 @@ export const createTheme = <
   optionsOpacities.forEach((val: number) => {
     if (val > 100 || val < 0) {
       throw new Error(
-        `Grammr Style: Opacity values must be between 0 and 100. Found '${val}' in options.opacities.`
+        `Grammr Style: Opacity values must be between 0 and 100. Found '${val}' in options.opacities.`,
       )
     }
   })
@@ -170,11 +253,14 @@ export const createTheme = <
   const modes = config.modes
   const responsive = config.responsive
 
-  // Generate Base Variables (e.g. :root or body)
-  let cssText = `:root {\n`
-
-  const usedSizes = getUsedSizes(config as ThemeConfig<Record<string, unknown>, Record<string, unknown>>)
-  const primitivesForCss = { ...primitives } as P & { size?: Record<string, string> }
+  const customOpacitiesOut: Record<string, string> = {}
+  
+  const usedSizes = getUsedSizes(
+    config as ThemeConfig<Record<string, unknown>, Record<string, unknown>>,
+  )
+  const primitivesForCss = { ...primitives } as P & {
+    size?: Record<string, string>
+  }
 
   if (usedSizes.size > 0 && primitivesForCss.size) {
     const filteredSizes: Record<string, string> = {}
@@ -186,21 +272,23 @@ export const createTheme = <
     primitivesForCss.size = filteredSizes
   }
 
+  let rootCssText = ""
   if (Object.keys(primitivesForCss).length > 0) {
-    cssText += createCssVars(primitivesForCss)
+    rootCssText += createCssVars(primitivesForCss, [], false, primitivesForCss, customOpacitiesOut)
   }
 
-  cssText += createCssVars(semantics, [], true)
-  cssText += `}\n`
+  rootCssText += createCssVars(semantics, [], true, primitivesForCss, customOpacitiesOut)
 
   // Generate Mode Variables (e.g. [data-theme="dark"])
+  let modesCssText = ""
   if (modes) {
     Object.entries(modes).forEach(([modeName, modeTokens]) => {
-      cssText += `\n[data-theme="${modeName}"] {\n${createCssVars(modeTokens as Record<string, unknown>, [], true)}}\n`
+      modesCssText += `\n[data-theme="${modeName}"] {\n${createCssVars(modeTokens as Record<string, unknown>, [], true, primitivesForCss, customOpacitiesOut)}}\n`
     })
   }
 
   // Generate Responsive Variables
+  let responsiveCssText = ""
   if (responsive && breakpoints) {
     Object.entries(responsive).forEach(([bpName, bpTokens]) => {
       let bpValue = breakpoints[bpName as keyof typeof breakpoints] as string
@@ -240,10 +328,12 @@ export const createTheme = <
 
         const condition = bpName.endsWith("Max") ? `max-width` : `min-width`
 
-        cssText += `\n@media (${condition}: ${bpValueStr}) {\n  :root {\n${createCssVars(
+        responsiveCssText += `\n@media (${condition}: ${bpValueStr}) {\n  :root {\n${createCssVars(
           bpTokens as Record<string, unknown>,
           [],
           true,
+          primitivesForCss,
+          customOpacitiesOut
         )
           .split("\n")
           .map(l => (l ? `    ${l}` : ""))
@@ -255,6 +345,16 @@ export const createTheme = <
       }
     })
   }
+
+  // Assemble Final Text
+  let cssText = `:root {\n`
+  Object.entries(customOpacitiesOut).forEach(([varName, val]) => {
+    cssText += `${varName}: ${val};\n`
+  })
+  cssText += rootCssText
+  cssText += `}\n`
+  cssText += modesCssText
+  cssText += responsiveCssText
 
   return {
     cssText,

@@ -6,10 +6,9 @@ import type { BaseGrammarConfig, ValidatedConfig } from "./types"
  */
 export function defineGrammar<
   P extends Record<string, unknown>,
-  const C extends BaseGrammarConfig<P>,
-  const O extends readonly number[] = C extends { options?: { opacities?: infer Ops extends readonly number[] } } ? Ops : []
->(config: C extends ValidatedConfig<P, C, O> ? C : ValidatedConfig<P, C, O>): Readonly<C & ValidatedConfig<P, C, O>> {
-  return config as unknown as Readonly<C & ValidatedConfig<P, C, O>>;
+  const C extends ValidatedConfig<P, C>
+>(config: C & (C extends { primitives: any } ? { primitives: P } : {})): Readonly<C & ValidatedConfig<P, C>> {
+  return config as unknown as Readonly<C & ValidatedConfig<P, C>>;
 }
 
 export { createTheme } from "./core"

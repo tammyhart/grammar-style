@@ -5,7 +5,7 @@ export default defineGrammar({
     breakpoints: {
       palm: "size.500",
     },
-    opacities: [5, 15, 33, 66, 100],
+    opacities: [5, 10, 33, 66, 100],
   },
 
   // 1. Define your raw primitive values
@@ -26,10 +26,15 @@ export default defineGrammar({
       illegal: "#EF4444",
       spec: "#3B82F6",
     },
+    shadow: {
+      xs: "0 size.1 size.2 0 color.syntax.900/5",
+      sm: "0 size.4 size.6 -size.1 color.syntax.900/10, 0 size.2 size.4 -size.1 color.syntax.900/66",
+      md: "0 size.10 size.16 -size.24 color.syntax.900/10, 0 size.6 size.10 -size.24 color.syntax.900/66",
+      lg: "0 size.20 size.32 -size.48 color.syntax.900/10, 0 size.10 size.20 -size.48 color.syntax.900/66",
+    },
   },
 
-  // 2. Semantics as a flat object parsing string dot-paths.
-  //    Try changing "size.192" to "size.193" to test type catching.
+  // 2. Semantics as a flat object parsing string dot-paths
   semantics: {
     color: {
       surface: {
@@ -45,7 +50,7 @@ export default defineGrammar({
         primary: "color.literal",
         secondary: "color.syntax.100",
         muted: "color.syntax.500",
-        accent: "color.semantic",
+        accent: "color.semantic/33",
       },
       action: {
         primary: "color.semantic",
@@ -58,12 +63,16 @@ export default defineGrammar({
       },
     },
     spacing: "size.24",
-
-    /* TODO: 
-    effect: {
-      blur: "blur(size.16)"
+    shadow: {
+      hover: "shadow.xs",
+      card: "shadow.sm",
+      nav: "shadow.md",
+      modal: "shadow.lg",
     },
-    */
+
+    effect: {
+      blur: "blur(size.16)",
+    },
   },
 
   // 3. Optional mode overrides
@@ -86,12 +95,13 @@ export default defineGrammar({
     },
   },
 
+  // 4. Optional responsive overrides
   responsive: {
-    palm: {
-      spacing: "size.1",
+    lap: {
+      spacing: "size.32",
     },
-    palmMax: {
-      spacing: "size.1",
+    desk: {
+      spacing: "size.40",
     },
   },
 })
