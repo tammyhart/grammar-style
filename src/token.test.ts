@@ -14,7 +14,31 @@ describe("token", () => {
   it("converts dot notation to CSS variable format", () => {
     // @ts-expect-error - testing the string transformation runtime mapping logic
     expect(token("color.primary.base")).toBe("var(--color-primary-base)")
-    // @ts-expect-error - testing the string transformation runtime mapping logic
+    // @ts-expect-error
     expect(token("spacing.md")).toBe("var(--spacing-md)")
+  })
+
+  it("handles negative paths", () => {
+    // @ts-expect-error - testing string transformation runtime logic independently
+    expect(token("-spacing.md")).toBe("var(--spacing-md-negative)")
+    // Native token validation natively tests ValidSizeStr strings implicitly
+    expect(token("-size.400")).toBe("var(--size-400-negative)")
+  })
+
+  it("handles paths with opacity", () => {
+    // @ts-expect-error - testing the string transformation runtime mapping logic
+    expect(token("color.primary.base/50")).toBe("var(--color-primary-base-50)")
+  })
+
+  it("throws an error for negative paths with opacity", () => {
+    // @ts-expect-error - testing the string transformation runtime mapping logic
+    expect(() => token("-color.primary.base/50")).toThrowError(
+      "Grammr Style: Token cannot mathematically be both negative and have opacity. Found: -color.primary.base/50"
+    )
+  })
+
+  it("handles paths inside functions (like blur)", () => {
+    // @ts-expect-error - testing the string transformation runtime mapping logic
+    expect(token("blur(size.16)")).toBe("blur(var(--size-16))")
   })
 })

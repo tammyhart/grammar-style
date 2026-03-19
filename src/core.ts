@@ -1,5 +1,6 @@
 import type { ThemeConfig } from "./types"
 import { defaultSizes, defaultBreakpoints, defaultOpacities } from "./defaults"
+import { TOKEN_REGEX } from "./utils"
 const isObject = (item: unknown): item is Record<string, unknown> => {
   return !!item && typeof item === "object" && !Array.isArray(item)
 }
@@ -29,10 +30,13 @@ const createCssVars = (
     let finalValue = value;
     if (typeof value === "string" && value.includes(".")) {
       finalValue = value.replace(
-        /(-?)([a-zA-Z][a-zA-Z0-9_\-]*\.[a-zA-Z0-9_\-\.]+)(\/([0-9]+))?/g,
+        TOKEN_REGEX,
         (match, isNegative, tokenTarget, hasOpacity, opacityValue) => {
           const cssVar = `var(--${tokenTarget.replace(/\./g, "-")})`;
           let result = cssVar;
+          if (isNegative && hasOpacity) {
+            throw new Error(`Grammr Style: Token cannot mathematically be both negative and have opacity. Found: -${tokenTarget}/${opacityValue}`);
+          }
           if (hasOpacity) {
             let rgbaResolved = false;
             if (primitives && opacityValue) {
@@ -89,7 +93,14 @@ const createCssVars = (
             }
           }
           if (isNegative) {
-            result = `calc(${cssVar} * -1)`;
+            if (customOpacitiesOut) {
+              const baseVarName = result.match(/var\(--(.*?)\)/)?.[1] || tokenTarget.replace(/\./g, "-");
+              const customVarName = `--${baseVarName}-negative`;
+              customOpacitiesOut[customVarName] = `calc(${result} * -1)`;
+              result = `var(${customVarName})`;
+            } else {
+              result = `calc(${result} * -1)`;
+            }
           }
           return result;
         }
@@ -107,8 +118,8 @@ const getUsedSizes = (
 
   const scanObj = (obj: unknown) => {
     if (typeof obj === "string") {
-      const match = obj.match(/size\.([A-Za-z0-9\-\.]+)/g)
-      if (match) match.forEach(m => used.add(m.replace("size.", "")))
+      const match = obj.match(/-?size\.([A-Za-z0-9\-\.]+)/g)
+      if (match) match.forEach(m => used.add(m))
     } else if (Array.isArray(obj)) {
       obj.forEach(scanObj)
     } else if (isObject(obj)) {
@@ -190,9 +201,9 @@ const getUsedSizes = (
     filesToScan.forEach(file => {
       try {
         const content = fs.readFileSync(file, "utf8")
-        const matches = content.match(/size\.([A-Za-z0-9\-]+)/g)
+        const matches = content.match(/-?size\.([A-Za-z0-9\-]+)/g)
         if (matches) {
-          matches.forEach((m: string) => used.add(m.replace("size.", "")))
+          matches.forEach((m: string) => used.add(m))
         }
       } catch (e) {}
     })
@@ -262,11 +273,18 @@ export const createTheme = <
     size?: Record<string, string>
   }
 
-  if (usedSizes.size > 0 && primitivesForCss.size) {
+  if (primitivesForCss.size) {
     const filteredSizes: Record<string, string> = {}
     Object.entries(primitivesForCss.size).forEach(([key, value]) => {
-      if (usedSizes.has(key)) {
+      const isPosUsed = usedSizes.has(`size.${key}`) || usedSizes.has(key)
+      const isNegUsed = usedSizes.has(`-size.${key}`)
+      
+      if (isPosUsed || isNegUsed) {
         filteredSizes[key] = value as string
+      }
+      
+      if (isNegUsed) {
+        customOpacitiesOut[`--size-${key}-negative`] = `calc(var(--size-${key}) * -1)`
       }
     })
     primitivesForCss.size = filteredSizes

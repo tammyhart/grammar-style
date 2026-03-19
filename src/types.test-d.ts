@@ -6,8 +6,8 @@ import { defineGrammar } from "./index"
 defineGrammar({
   semantics: {
     // @ts-expect-error - px values are not allowed
-    spacing: "24px"
-  }
+    spacing: "24px",
+  },
 })
 
 // ----------------------------------------------------------------------------
@@ -16,50 +16,58 @@ defineGrammar({
 defineGrammar({
   semantics: {
     // @ts-expect-error - invalid negative primitive path
-    margin: "-size.foo"
-  }
+    margin: "-size.foo",
+  },
+})
+
+// ----------------------------------------------------------------------------
+// RULE: negative variables must safely map
+// ----------------------------------------------------------------------------
+defineGrammar({
+  primitives: {},
+  semantics: {
+    // @ts-expect-error - negative variables must gracefully resolve via TS checking
+    margin: "-spacing",
+  },
 })
 
 // BUT valid negative path
 defineGrammar({
   primitives: {},
   semantics: {
-    margin: "-size.4" 
-  }
+    margin: "-size.4",
+  },
 })
-
-// ----------------------------------------------------------------------------
-// RULE: opacity not allowed in options.opacities
 // ----------------------------------------------------------------------------
 defineGrammar({
   primitives: {
     color: {
       syntax: {
-        900: "#000"
-      }
-    }
+        900: "#000",
+      },
+    },
   },
   semantics: {
     // @ts-expect-error - opacity 52 not in defaults
-    color: "color.syntax.900/52" 
-  }
+    color: "color.syntax.900/52",
+  },
 })
 
 // BUT should be allowed if defined in options:
 defineGrammar({
   options: {
-    opacities: [52]
+    opacities: [52],
   },
   primitives: {
     color: {
       syntax: {
-        900: "#000"
-      }
-    }
+        900: "#000",
+      },
+    },
   },
   semantics: {
-    color: "color.syntax.900/52"
-  }
+    color: "color.syntax.900/52",
+  },
 })
 
 // ----------------------------------------------------------------------------
@@ -68,8 +76,8 @@ defineGrammar({
 defineGrammar({
   semantics: {
     // @ts-expect-error - color.foo.bar does not exist before opacity
-    color: "color.foo.bar/10"
-  }
+    color: "color.foo.bar/10",
+  },
 })
 
 // ----------------------------------------------------------------------------
@@ -78,16 +86,16 @@ defineGrammar({
 defineGrammar({
   semantics: {
     // @ts-expect-error - invalid primitive path inside blur
-    effect: "blur(size.foo)"
-  }
+    effect: "blur(size.foo)",
+  },
 })
 
 // BUT valid inside blur
 defineGrammar({
   primitives: {},
   semantics: {
-    effect: "blur(size.4)"
-  }
+    effect: "blur(size.4)",
+  },
 })
 
 // ----------------------------------------------------------------------------
@@ -96,22 +104,21 @@ defineGrammar({
 defineGrammar({
   semantics: {
     // @ts-expect-error - literal colors are not allowed outside primitives
-    color: "#ff0000"
-  }
+    color: "#ff0000",
+  },
 })
 
 // BUT allowed in primitives
 defineGrammar({
   primitives: {
     color: {
-      primary: "#ff0000"
-    }
+      primary: "#ff0000",
+    },
   },
   semantics: {
-    color: "color.primary"
-  }
+    color: "color.primary",
+  },
 })
-
 
 // ----------------------------------------------------------------------------
 // RULE: invalid token
@@ -119,8 +126,8 @@ defineGrammar({
 defineGrammar({
   semantics: {
     // @ts-expect-error - random string is invalid token
-    foo: "random_string"
-  }
+    foo: "random_string",
+  },
 })
 
 // ----------------------------------------------------------------------------
@@ -131,19 +138,19 @@ defineGrammar({
     color: {
       syntax: {
         900: "#000",
-        100: "#fff"
-      }
-    }
+        100: "#fff",
+      },
+    },
   },
   semantics: {
-    color: "color.syntax.900" 
+    color: "color.syntax.900",
   },
   modes: {
     dark: {
       // @ts-expect-error - property does not exist in semantics
-      unknownProperty: "color.syntax.100"
-    }
-  }
+      unknownProperty: "color.syntax.100",
+    },
+  },
 })
 
 // ----------------------------------------------------------------------------
@@ -152,14 +159,14 @@ defineGrammar({
 defineGrammar({
   primitives: {},
   semantics: {
-    spacing: "size.4" 
+    spacing: "size.4",
   },
   responsive: {
     lap: {
       // @ts-expect-error - property does not exist in semantics
-      unknownProperty: "size.200"
-    }
-  }
+      unknownProperty: "size.200",
+    },
+  },
 })
 
 // ----------------------------------------------------------------------------
@@ -170,42 +177,42 @@ defineGrammar({
     color: {
       syntax: {
         900: "#000",
-        100: "#fff"
-      }
-    }
+        100: "#fff",
+      },
+    },
   },
   semantics: {
-    color: "color.syntax.900"
+    color: "color.syntax.900",
   },
   modes: {
     // @ts-expect-error - invalid mode name
     alien: {
-      color: "color.syntax.100"
-    }
-  }
+      color: "color.syntax.100",
+    },
+  },
 })
 
 // BUT valid if added to options.modes
 defineGrammar({
   options: {
-    modes: ["alien"]
+    modes: ["alien"],
   },
   primitives: {
     color: {
       syntax: {
         900: "#000",
-        100: "#fff"
-      }
-    }
+        100: "#fff",
+      },
+    },
   },
   semantics: {
-    color: "color.syntax.900"
+    color: "color.syntax.900",
   },
   modes: {
     alien: {
-      color: "color.syntax.100"
-    }
-  }
+      color: "color.syntax.100",
+    },
+  },
 })
 
 // ----------------------------------------------------------------------------
@@ -214,9 +221,9 @@ defineGrammar({
 defineGrammar({
   options: {
     // @ts-expect-error - opacity < 0
-    opacities: [-10]
+    opacities: [-10],
   },
-  semantics: {}
+  semantics: {},
 })
 
 // ----------------------------------------------------------------------------
@@ -225,9 +232,9 @@ defineGrammar({
 defineGrammar({
   options: {
     // @ts-expect-error - opacity > 100
-    opacities: [101]
+    opacities: [101],
   },
-  semantics: {}
+  semantics: {},
 })
 
 // ----------------------------------------------------------------------------
@@ -235,9 +242,9 @@ defineGrammar({
 // ----------------------------------------------------------------------------
 defineGrammar({
   options: {
-    opacities: [10.5]
+    opacities: [10.5],
   },
-  semantics: {}
+  semantics: {},
 })
 
 // ----------------------------------------------------------------------------
@@ -247,10 +254,10 @@ defineGrammar({
   options: {
     breakpoints: {
       // @ts-expect-error - Max breakpoints not allowed
-      lapMax: "60rem"
-    }
+      lapMax: "60rem",
+    },
   },
-  semantics: {}
+  semantics: {},
 })
 
 // ----------------------------------------------------------------------------
@@ -260,20 +267,20 @@ defineGrammar({
   options: {
     breakpoints: {
       // @ts-expect-error - px not allowed in breakpoints
-      lap: "60px"
-    }
+      lap: "60px",
+    },
   },
-  semantics: {}
+  semantics: {},
 })
 
 // BUT valid rem value
 defineGrammar({
   options: {
     breakpoints: {
-      lap: "60rem"
-    }
+      lap: "60rem",
+    },
   },
-  semantics: {}
+  semantics: {},
 })
 
 // ----------------------------------------------------------------------------
@@ -282,8 +289,8 @@ defineGrammar({
 defineGrammar({
   semantics: {},
   responsive: {
-    lapMax: {}
-  }
+    lapMax: {},
+  },
 })
 
 // ----------------------------------------------------------------------------
@@ -293,15 +300,15 @@ defineGrammar({
 defineGrammar({
   primitives: {
     // @ts-expect-error - 24px is invalid token even in primitives
-    shadow: "0 size.10 24px -size.100"
+    shadow: "0 size.10 24px -size.100",
   },
-  semantics: {}
+  semantics: {},
 })
 
 // Should succeed if valid
 defineGrammar({
   primitives: {
-    shadow: "0 size.100 size.200 -size.100"
+    shadow: "0 size.100 size.200 -size.100",
   },
-  semantics: {}
+  semantics: {},
 })

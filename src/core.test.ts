@@ -73,7 +73,8 @@ describe("createTheme", () => {
   it("handles negative resolution math via calc() wrappers", () => {
     const theme = createTheme(mockConfig)
     
-    expect(theme.cssText).toContain("--negative: calc(var(--size-1000) * -1);")
+    expect(theme.cssText).toContain("--negative: var(--size-1000-negative)")
+    expect(theme.cssText).toContain("--size-1000-negative: calc(var(--size-1000) * -1)")
   })
 
   it("throws error when trying to use px values", () => {

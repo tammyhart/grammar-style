@@ -1,3 +1,14 @@
+import type {
+  DefaultSizes,
+  BreakpointName,
+  BaseBreakpointName,
+  ValidBreakpointValue,
+  ValidModeName,
+  DefaultOpacities,
+  ValidOpacityName,
+  ValidSizeStr
+} from "./defaults"
+
 export type Primitive = string | number | boolean | null | undefined
 
 export type Leaves<T> =
@@ -68,7 +79,11 @@ export type ValidToken<S extends string, P, IsPrimitive extends boolean = false,
   S extends "" ? true
   : S extends `${string}px${string}` ? `Error: 'px' values are not allowed: '${S}'`
   : S extends PathToDots<P> ? true
-  : S extends `-${infer Rest}` ? (Rest extends PathToDots<P> ? true : `Error: invalid negative primitive path: '${Rest}'`)
+  : S extends `-${infer Rest}` ? (
+      Rest extends `size.${string}` ? 
+        (Rest extends PathToDots<P> ? true : `Error: invalid negative primitive path: '${Rest}'`)
+      : `Error: negative values are only allowed for size primitives: '${Rest}'`
+    )
   : S extends `${infer Prefix}/${infer _Opacity}` ? (Prefix extends PathToDots<P> ? (_Opacity extends `${Ops}` ? true : `Error: opacity '${_Opacity}' is not allowed in options.opacities`) : `Error: invalid primitive path before opacity: '${Prefix}'`)
   : S extends `blur(${infer Inner})` ? (Inner extends PathToDots<P> ? true : `Error: invalid primitive path inside blur: '${Inner}'`)
   : S extends `${string}.${string}` ? (
@@ -115,7 +130,21 @@ export interface Register {}
 
 export type GrammarRegistry = Register extends { theme: infer T } ? T : {}
 
-export type TokenPath = CleanPath<Leaves<GrammarRegistry>>
+export type GrammarTokens = GrammarRegistry extends { semantics: infer S } ? S : {}
+export type GrammarPrimitives = GrammarRegistry extends { primitives: infer P } ? P : {}
+
+export type ResolvesToSize<T, P extends string = ""> = T extends undefined ? never : {
+  [K in keyof T]-?: T[K] extends `size.${string}` | `calc(${string}` | `-${string}` ? `${P}${K & string}`
+    : T[K] extends object ? ResolvesToSize<T[K], `${P}${K & string}.`> 
+    : never
+}[keyof T]
+
+export type TokenPath = 
+  | CleanPath<NonNullable<Leaves<GrammarTokens>>> 
+  | CleanPath<NonNullable<Leaves<GrammarPrimitives>>>
+  | (ResolvesToSize<GrammarTokens> extends infer R ? R extends string ? `-${R}` : never : never)
+  | `size.${ValidSizeStr}`
+  | `-size.${ValidSizeStr}`
 
 // Force exact match by returning never if the user supplies a key that does not exist in the shape
 export type StrictDeepPartial<Shape, Input> =
@@ -126,16 +155,6 @@ export type StrictDeepPartial<Shape, Input> =
       : never // This `never` forces a type error
     }
   : DeepPartial<Shape>
-
-import type {
-  DefaultSizes,
-  BreakpointName,
-  BaseBreakpointName,
-  ValidBreakpointValue,
-  ValidModeName,
-  DefaultOpacities,
-  ValidOpacityName,
-} from "./defaults"
 
 export interface ThemeConfig<
   P extends Record<string, unknown>,

@@ -1,12 +1,23 @@
 import type { TokenPath } from "./types"
+import { TOKEN_REGEX, formatTokenToCssVar } from "./utils"
 
 const token = (path: TokenPath): string => {
   if (!path) return ""
 
-  // We simply convert the object path (color.primary.base) to CSS var (--color-primary-base)
-  const variable = (path as string).replace(/\./g, "-")
+  const safePath = String(path)
 
-  return `var(--${variable})`
+  return safePath.replace(
+    TOKEN_REGEX,
+    (
+      match: string,
+      isNegative: string,
+      tokenTarget: string,
+      hasOpacity: string,
+      opacityValue: string,
+    ) => {
+      return formatTokenToCssVar(isNegative, tokenTarget, opacityValue)
+    }
+  )
 }
 
 export default token
