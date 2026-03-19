@@ -12,13 +12,15 @@ export const formatTokenToCssVar = (
     )
   }
 
-  let result = `var(--${tokenTarget.replace(/\./g, "-")})`
+  let formattedTarget = tokenTarget.replace(/\./g, "-")
+
   if (opacityValue) {
-    result = `var(--${tokenTarget.replace(/\./g, "-")}-${opacityValue})`
+    formattedTarget += `-${opacityValue}`
   }
+
   if (isNegative) {
-    const baseVarName = result.match(/var\(--(.*?)\)/)?.[1] || tokenTarget.replace(/\./g, "-")
-    result = `var(--${baseVarName}-negative)`
+    formattedTarget += `-negative`
   }
-  return result
+
+  return `var(--${formattedTarget})`
 }
