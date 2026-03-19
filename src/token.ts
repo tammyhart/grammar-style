@@ -3,10 +3,13 @@ import { TOKEN_REGEX, formatTokenToCssVar } from "./utils"
 
 const cache = new Map<string, string>()
 
-const token = <T extends string>(
-  path: T extends TokenPath ? T : ValidateTokenString<T> extends T ? T : ValidateTokenString<T>
-): string => {
-  if (!path) return ""
+type TokenInput<T extends string> = T extends TokenPath ? T : ValidateTokenString<T> extends T ? T : ValidateTokenString<T>
+
+/* v8 ignore next */
+const token = <T extends string>(path: TokenInput<T>): string => {
+  if (!path) {
+    return ""
+  }
 
   const safePath = String(path)
 

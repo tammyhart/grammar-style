@@ -5,8 +5,10 @@ import { defineGrammar } from "./index"
 // ----------------------------------------------------------------------------
 defineGrammar({
   semantics: {
-    // @ts-expect-error - px values are not allowed
-    spacing: "24px",
+    spacing: {
+      // @ts-expect-error - px values are not allowed
+      value: "24px",
+    },
   },
 })
 
@@ -35,7 +37,7 @@ defineGrammar({
 defineGrammar({
   primitives: {},
   semantics: {
-    margin: "-size.4",
+    margin: { value: "-size.4" },
   },
 })
 // ----------------------------------------------------------------------------
@@ -48,8 +50,10 @@ defineGrammar({
     },
   },
   semantics: {
-    // @ts-expect-error - opacity 52 not in defaults
-    color: "color.syntax.900/52",
+    color: {
+      // @ts-expect-error - opacity 52 not in defaults
+      value: "color.syntax.900/52",
+    },
   },
 })
 
@@ -66,7 +70,7 @@ defineGrammar({
     },
   },
   semantics: {
-    color: "color.syntax.900/52",
+    color: { value: "color.syntax.900/52" },
   },
 })
 
@@ -75,8 +79,10 @@ defineGrammar({
 // ----------------------------------------------------------------------------
 defineGrammar({
   semantics: {
-    // @ts-expect-error - color.foo.bar does not exist before opacity
-    color: "color.foo.bar/10",
+    color: {
+      // @ts-expect-error - color.foo.bar does not exist before opacity
+      value: "color.foo.bar/10",
+    },
   },
 })
 
@@ -85,8 +91,10 @@ defineGrammar({
 // ----------------------------------------------------------------------------
 defineGrammar({
   semantics: {
-    // @ts-expect-error - invalid primitive path inside blur
-    effect: "blur(size.foo)",
+    effect: {
+      // @ts-expect-error - invalid primitive path inside blur
+      value: "blur(size.foo)",
+    },
   },
 })
 
@@ -94,7 +102,7 @@ defineGrammar({
 defineGrammar({
   primitives: {},
   semantics: {
-    effect: "blur(size.4)",
+    effect: { value: "blur(size.4)" },
   },
 })
 
@@ -103,8 +111,10 @@ defineGrammar({
 // ----------------------------------------------------------------------------
 defineGrammar({
   semantics: {
-    // @ts-expect-error - literal colors are not allowed outside primitives
-    color: "#ff0000",
+    color: {
+      // @ts-expect-error - literal colors are not allowed outside primitives
+      value: "#ff0000",
+    },
   },
 })
 
@@ -116,7 +126,7 @@ defineGrammar({
     },
   },
   semantics: {
-    color: "color.primary",
+    color: { value: "color.primary" },
   },
 })
 
@@ -125,8 +135,10 @@ defineGrammar({
 // ----------------------------------------------------------------------------
 defineGrammar({
   semantics: {
-    // @ts-expect-error - random string is invalid token
-    foo: "random_string",
+    foo: {
+      // @ts-expect-error - random string is invalid token
+      value: "random_string",
+    },
   },
 })
 
@@ -143,7 +155,7 @@ defineGrammar({
     },
   },
   semantics: {
-    color: "color.syntax.900",
+    color: { value: "color.syntax.900" },
   },
   modes: {
     dark: {
@@ -159,7 +171,7 @@ defineGrammar({
 defineGrammar({
   primitives: {},
   semantics: {
-    spacing: "size.4",
+    spacing: { value: "size.4" },
   },
   responsive: {
     lap: {
@@ -182,12 +194,12 @@ defineGrammar({
     },
   },
   semantics: {
-    color: "color.syntax.900",
+    color: { value: "color.syntax.900" },
   },
   modes: {
     // @ts-expect-error - invalid mode name
     alien: {
-      color: "color.syntax.100",
+      color: { value: "color.syntax.100" },
     },
   },
 })
@@ -206,11 +218,11 @@ defineGrammar({
     },
   },
   semantics: {
-    color: "color.syntax.900",
+    color: { value: "color.syntax.900" },
   },
   modes: {
     alien: {
-      color: "color.syntax.100",
+      color: { value: "color.syntax.100" },
     },
   },
 })
@@ -299,8 +311,10 @@ defineGrammar({
 // Should error if any token is bad (in primitives, IsPrimitive=true)
 defineGrammar({
   primitives: {
-    // @ts-expect-error - 24px is invalid token even in primitives
-    shadow: "0 size.10 24px -size.100",
+    shadow: {
+      // @ts-expect-error - 24px is invalid token even in primitives
+      value: "0 size.10 24px -size.100",
+    },
   },
   semantics: {},
 })
@@ -308,7 +322,7 @@ defineGrammar({
 // Should succeed if valid
 defineGrammar({
   primitives: {
-    shadow: "0 size.100 size.200 -size.100",
+    shadow: { value: "0 size.100 size.200 -size.100" },
   },
   semantics: {},
 })

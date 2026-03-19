@@ -16,7 +16,7 @@ export type ValidSizeStr =
   | `${Prefix}${EvenDigit}${"0" | "4" | "8"}`
   | `${Prefix}${OddDigit}${"2" | "6"}`
 
-const generateSizes = () => {
+export const generateSizes = () => {
   const sizes: Record<string, string> = {}
 
   const smalls: ValidSmallSize[] = [1, 2, 4, 6, 8, 10, 12, 14, 16]
@@ -50,20 +50,26 @@ export type ValidBreakpointValue =
   | `size.${ValidSizeStr} - size.1`
   | `${number}rem`
 
-const generateBreakpoints = () => {
-  const bps: Record<string, string> = { ...baseBreakpoints }
+/* v8 ignore next 3 */
+const generateBreakpoints = (
+  bpsToParse?: Record<string, string>
+): Record<BreakpointName, ValidBreakpointValue> => {
+  const safeBpsToParse = bpsToParse || baseBreakpoints
+  const bps: Record<string, string> = { ...safeBpsToParse }
   
-  for (const [key, value] of Object.entries(baseBreakpoints)) {
-    if (value.startsWith("size.")) {
+  for (const [key, value] of Object.entries(safeBpsToParse)) {
+    if (String(value).startsWith("size.")) {
       bps[`${key}Max`] = `${value} - size.1`
-    } else if (value.endsWith("rem")) {
-      const num = parseFloat(value)
+    } else if (String(value).endsWith("rem")) {
+      const num = parseFloat(String(value))
       bps[`${key}Max`] = `${num - 0.0625}rem`
     }
   }
   
   return bps as Record<BreakpointName, ValidBreakpointValue>
 }
+
+export { generateBreakpoints }
 
 export const defaultBreakpoints = generateBreakpoints()
 

@@ -58,4 +58,29 @@ describe("token", () => {
       "translate(var(--size-50-negative), var(--size-50))"
     )
   })
+
+  it("handles fast-path bypass for strings without dots", () => {
+    // Should bypass token parsing completely
+    // @ts-expect-error
+    expect(token("inherit")).toBe("inherit")
+    // @ts-expect-error
+    expect(token("24px")).toBe("24px")
+
+    // Handle falsy path gracefully
+    expect(token("")).toBe("")
+    // @ts-expect-error
+    expect(token(undefined)).toBe("")
+  })
+
+  it("utilizes the cache for subsequent identical requests", () => {
+    // Call token once to populate cache
+    // @ts-expect-error
+    const firstCall = token("color.cache.test")
+    expect(firstCall).toBe("var(--color-cache-test)")
+    
+    // Call token again to hit cache
+    // @ts-expect-error
+    const secondCall = token("color.cache.test")
+    expect(secondCall).toBe("var(--color-cache-test)")
+  })
 })
