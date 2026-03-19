@@ -13,7 +13,7 @@
     "test": "vitest run && npm run test:types",
     "test:types": "tsc --noEmit --strict src/types.test-d.ts",
     "sandbox": "npx jiti test/sandbox.ts",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage --coverage.reporter=text"
   },
   "repository": {
     "type": "git",
