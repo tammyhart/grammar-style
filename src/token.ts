@@ -1,12 +1,18 @@
 import type { TokenPath } from "./types"
 import { TOKEN_REGEX, formatTokenToCssVar } from "./utils"
 
+const cache = new Map<string, string>()
+
 const token = (path: TokenPath): string => {
   if (!path) return ""
 
   const safePath = String(path)
 
-  return safePath.replace(
+  if (cache.has(safePath)) {
+    return cache.get(safePath)!
+  }
+
+  const result = safePath.replace(
     TOKEN_REGEX,
     (
       match: string,
@@ -16,8 +22,11 @@ const token = (path: TokenPath): string => {
       opacityValue: string,
     ) => {
       return formatTokenToCssVar(isNegative, tokenTarget, opacityValue)
-    }
+    },
   )
+
+  cache.set(safePath, result)
+  return result
 }
 
 export default token
