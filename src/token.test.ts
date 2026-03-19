@@ -3,7 +3,7 @@ import token from "./token"
 
 describe("token", () => {
   it("returns empty string if falsy path", () => {
-    // @ts-expect-error - value resolves to never natively because it's not bound
+    // Empty strings are now supported as valid
     expect(token("")).toBe("")
     // @ts-expect-error
     expect(token(undefined)).toBe("")
@@ -38,7 +38,24 @@ describe("token", () => {
   })
 
   it("handles paths inside functions (like blur)", () => {
-    // @ts-expect-error - testing the string transformation runtime mapping logic
+    // Composite tokens are now fully typed!
     expect(token("blur(size.16)")).toBe("blur(var(--size-16))")
+  })
+
+  it("handles multiple tokens in a generic shorthand string natively at runtime", () => {
+    // @ts-expect-error - TS doesn't natively parse loose CSS properties
+    expect(token("0 size.24 size.48 color.primary.base")).toBe(
+      "0 var(--size-24) var(--size-48) var(--color-primary-base)"
+    )
+  })
+
+  it("handles CSS math logic natively at runtime", () => {
+    // @ts-expect-error - TS doesn't natively parse loose CSS calc strings
+    expect(token("calc(size.100 * 2)")).toBe("calc(var(--size-100) * 2)")
+    
+    // @ts-expect-error
+    expect(token("translate(-size.50, size.50)")).toBe(
+      "translate(var(--size-50-negative), var(--size-50))"
+    )
   })
 })

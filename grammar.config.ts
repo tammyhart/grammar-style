@@ -62,7 +62,11 @@ export default defineGrammar({
         info: "color.spec",
       },
     },
-    spacing: "size.24",
+    spacing: {
+      base: "size.24",
+      half: "size.12",
+      double: "size.48",
+    },
     shadow: {
       hover: "shadow.xs",
       card: "shadow.sm",
@@ -98,10 +102,18 @@ export default defineGrammar({
   // 4. Optional responsive overrides
   responsive: {
     lap: {
-      spacing: "size.32",
+      spacing: {
+        base: "size.32",
+        half: "size.16",
+        double: "size.64",
+      },
     },
     desk: {
-      spacing: "size.40",
+      spacing: {
+        base: "size.40",
+        half: "size.20",
+        double: "size.80",
+      },
     },
   },
 })

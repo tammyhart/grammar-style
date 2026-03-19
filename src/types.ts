@@ -107,12 +107,22 @@ export type ValidateObject<Input, P, IsPrimitive extends boolean = false, Ops ex
   : Input[K]
 }
 
+export type ValidateRootObject<Input, P, IsPrimitive extends boolean = false, Ops extends string | number = ValidOpacityName> = {
+  [K in keyof Input]: Input[K] extends object ? ValidateObject<Input[K], P, IsPrimitive, Ops>
+  : "Error: Tokens must be nested at least one level deep (e.g., namespace: { key: 'value' }) to generate valid dot paths."
+}
+
 export type ExpectedShape<Input, P, Ops extends string | number = ValidOpacityName> = {
   [K in keyof Input]: Input[K] extends object ? ExpectedShape<Input[K], P, Ops>
   : Input[K] extends PathToDots<P> ? PathToDots<P>
   : Input[K] extends string ? ValidateString<Input[K], P, false, Ops>
   : Input[K] extends number ? number
   : PathToDots<P>
+}
+
+export type ExpectedRootShape<Input, P, Ops extends string | number = ValidOpacityName> = {
+  [K in keyof Input]: Input[K] extends object ? ExpectedShape<Input[K], P, Ops>
+  : "Error: Tokens must be nested at least one level deep (e.g., namespace: { key: 'value' }) to generate valid dot paths."
 }
 
 export type SafeNoInfer<T> = [T][T extends unknown ? 0 : never]
@@ -145,6 +155,23 @@ export type TokenPath =
   | (ResolvesToSize<GrammarTokens> extends infer R ? R extends string ? `-${R}` : never : never)
   | `size.${ValidSizeStr}`
   | `-size.${ValidSizeStr}`
+
+export type IsStrictToken<S extends string> =
+  S extends "" ? true
+  : S extends `${string}px${string}` ? `Error: 'px' values are not allowed`
+  : S extends TokenPath ? true
+  : S extends `-${infer Rest}` ? (Rest extends TokenPath ? true : `Error: invalid negative token: '${Rest}'`)
+  : S extends `${infer Prefix}/${infer _Ops}` ? (Prefix extends TokenPath ? true : `Error: invalid token before opacity: '${Prefix}'`)
+  : S extends `blur(${infer Inner})` ? (Inner extends TokenPath ? true : `Error: invalid token inside blur: '${Inner}'`)
+  : `Error: invalid token: '${S}'`
+
+export type ValidateTokenString<S extends string> = string extends S ? S
+  : S extends `${infer First}, ${infer Rest}` ? (ValidateTokenString<First> extends First ? (ValidateTokenString<Rest> extends Rest ? S : ValidateTokenString<Rest>) : ValidateTokenString<First>)
+  : S extends `${infer First},${infer Rest}` ? (ValidateTokenString<First> extends First ? (ValidateTokenString<Rest> extends Rest ? S : ValidateTokenString<Rest>) : ValidateTokenString<First>)
+  : S extends `${infer First} ${infer Rest}` ? (IsStrictToken<First> extends true ? (ValidateTokenString<Rest> extends Rest ? S : ValidateTokenString<Rest>) : IsStrictToken<First> extends string ? IsStrictToken<First> : `Error: invalid token: '${First}'`)
+  : IsStrictToken<S> extends true ? S
+  : IsStrictToken<S> extends string ? IsStrictToken<S>
+  : `Error: invalid token: '${S}'`
 
 // Force exact match by returning never if the user supplies a key that does not exist in the shape
 export type StrictDeepPartial<Shape, Input> =
@@ -319,8 +346,8 @@ export type ValidatedConfig<
     modes?: readonly string[]
     opacities?: ValidateOpacitiesArray<O>
   }
-  primitives?: ValidateObject<P, P & CorePrimitives, true, AllowedOpacities<C> & (string | number)>
-  semantics: ExpectedShape<ExtractS<C>, P & CorePrimitives, AllowedOpacities<C> & (string | number)>
+  primitives?: ValidateRootObject<P, P & CorePrimitives, true, AllowedOpacities<C> & (string | number)>
+  semantics: ExpectedRootShape<ExtractS<C>, P & CorePrimitives, AllowedOpacities<C> & (string | number)>
   modes?: ValidateModes<ExtractM<C>, ExtractS<C>, P & CorePrimitives, C>
   responsive?: ValidateResponsive<
     ExtractR<C>,
