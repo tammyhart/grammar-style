@@ -16,7 +16,7 @@ defineGrammar({
 defineGrammar({
   semantics: {
     // @ts-expect-error - invalid negative primitive path
-    margin: "-size.foo",
+    margin: { value: "-size.foo" },
   },
 })
 
@@ -27,7 +27,7 @@ defineGrammar({
   primitives: {},
   semantics: {
     // @ts-expect-error - negative variables must gracefully resolve via TS checking
-    margin: "-spacing",
+    margin: { value: "-spacing" },
   },
 })
 

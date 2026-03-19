@@ -66,6 +66,44 @@ export type ValidatePaths<Input, P> = {
   : Input[K]
 }
 
+export type ReplaceAll<S extends string, From extends string, To extends string> =
+  From extends "" ? S
+  : S extends `${infer L}${From}${infer R}` ?
+    `${L}${To}${ReplaceAll<R, From, To>}`
+  : S
+
+export type ReplaceDashes<S extends string> =
+  S extends `-${infer Rest}` ?
+    `-${ReplaceAll<Rest, "-", ".">}`
+  : ReplaceAll<S, "-", ".">
+
+export type DidYouMeanSuffix<
+  S extends string,
+  P,
+  IsPrimitive extends boolean,
+  Ops extends string | number,
+> =
+  ReplaceDashes<S> extends infer Suggested ?
+    Suggested extends string ?
+      Suggested extends S ?
+        ""
+      : ValidToken<Suggested, P, IsPrimitive, Ops> extends true ?
+        ` Did you mean '${Suggested}'?`
+      : ""
+    : ""
+  : ""
+
+export type DidYouMeanStrictSuffix<S extends string> =
+  ReplaceDashes<S> extends infer Suggested ?
+    Suggested extends string ?
+      Suggested extends S ?
+        ""
+      : IsStrictToken<Suggested> extends true ?
+        ` Did you mean '${Suggested}'?`
+      : ""
+    : ""
+  : ""
+
 export type HasColorValue<S extends string> = S extends `#${string}` ? true
   : S extends `rgb(${string}` ? true
   : S extends `rgba(${string}` ? true
@@ -81,15 +119,15 @@ export type ValidToken<S extends string, P, IsPrimitive extends boolean = false,
   : S extends PathToDots<P> ? true
   : S extends `-${infer Rest}` ? (
       Rest extends `size.${string}` ? 
-        (Rest extends PathToDots<P> ? true : `Error: invalid negative primitive path: '${Rest}'`)
-      : `Error: negative values are only allowed for size primitives: '${Rest}'`
+        (Rest extends PathToDots<P> ? true : `Error: invalid negative primitive path: '${Rest}'${DidYouMeanSuffix<S, P, IsPrimitive, Ops>}`)
+      : `Error: negative values are only allowed for size primitives: '${Rest}'${DidYouMeanSuffix<S, P, IsPrimitive, Ops>}`
     )
-  : S extends `${infer Prefix}/${infer _Opacity}` ? (Prefix extends PathToDots<P> ? (_Opacity extends `${Ops}` ? true : `Error: opacity '${_Opacity}' is not allowed in options.opacities`) : `Error: invalid primitive path before opacity: '${Prefix}'`)
-  : S extends `blur(${infer Inner})` ? (Inner extends PathToDots<P> ? true : `Error: invalid primitive path inside blur: '${Inner}'`)
+  : S extends `${infer Prefix}/${infer _Opacity}` ? (Prefix extends PathToDots<P> ? (_Opacity extends `${Ops}` ? true : `Error: opacity '${_Opacity}' is not allowed in options.opacities`) : `Error: invalid primitive path before opacity: '${Prefix}'${DidYouMeanSuffix<S, P, IsPrimitive, Ops>}`)
+  : S extends `blur(${infer Inner})` ? (Inner extends PathToDots<P> ? true : `Error: invalid primitive path inside blur: '${Inner}'${DidYouMeanSuffix<S, P, IsPrimitive, Ops>}`)
   : S extends `${string}.${string}` ? (
-      S extends `${"0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"}${string}` ? true : `Error: invalid token: '${S}'`
+      S extends `${"0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"}${string}` ? true : `Error: invalid token: '${S}'${DidYouMeanSuffix<S, P, IsPrimitive, Ops>}`
     )
-  : IsPrimitive extends false ? (HasColorValue<S> extends true ? `Error: literal colors are not allowed outside primitives: '${S}'` : `Error: invalid token: '${S}'`)
+  : IsPrimitive extends false ? (HasColorValue<S> extends true ? `Error: literal colors are not allowed outside primitives: '${S}'` : `Error: invalid token: '${S}'${DidYouMeanSuffix<S, P, IsPrimitive, Ops>}`)
   : true
 
 export type ValidateString<S extends string, P, IsPrimitive extends boolean = false, Ops extends string | number = ValidOpacityName> = string extends S ? S
@@ -160,10 +198,10 @@ export type IsStrictToken<S extends string> =
   S extends "" ? true
   : S extends `${string}px${string}` ? `Error: 'px' values are not allowed`
   : S extends TokenPath ? true
-  : S extends `-${infer Rest}` ? (Rest extends TokenPath ? true : `Error: invalid negative token: '${Rest}'`)
-  : S extends `${infer Prefix}/${infer _Ops}` ? (Prefix extends TokenPath ? true : `Error: invalid token before opacity: '${Prefix}'`)
-  : S extends `blur(${infer Inner})` ? (Inner extends TokenPath ? true : `Error: invalid token inside blur: '${Inner}'`)
-  : `Error: invalid token: '${S}'`
+  : S extends `-${infer Rest}` ? (Rest extends TokenPath ? true : `Error: invalid negative token: '${Rest}'${DidYouMeanStrictSuffix<S>}`)
+  : S extends `${infer Prefix}/${infer _Ops}` ? (Prefix extends TokenPath ? true : `Error: invalid token before opacity: '${Prefix}'${DidYouMeanStrictSuffix<S>}`)
+  : S extends `blur(${infer Inner})` ? (Inner extends TokenPath ? true : `Error: invalid token inside blur: '${Inner}'${DidYouMeanStrictSuffix<S>}`)
+  : `Error: invalid token: '${S}'${DidYouMeanStrictSuffix<S>}`
 
 export type ValidateTokenString<S extends string> = string extends S ? S
   : S extends `${infer First}, ${infer Rest}` ? (ValidateTokenString<First> extends First ? (ValidateTokenString<Rest> extends Rest ? S : ValidateTokenString<Rest>) : ValidateTokenString<First>)
