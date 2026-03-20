@@ -62,4 +62,21 @@ describe("loadConfigSync", () => {
     
     fs.rmSync(badDir, { recursive: true, force: true })
   })
+
+  it("safely handles unwrapped CommonJS exports to cover 'default' branch natively", async () => {
+    const fs = await import("node:fs")
+    const dir = join(process.cwd(), "test-cjs-export")
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir)
+    fs.writeFileSync(join(dir, "grammar.config.cjs"), "module.exports = { primitives: { p: 1 }, semantics: {} };")
+    
+    // Test the async tracker
+    const configAsync = await loadConfig(dir)
+    expect(configAsync?.primitives).toBeDefined()
+    
+    // Test the sync tracker
+    const configSync = loadConfigSync(dir)
+    expect(configSync?.primitives).toBeDefined()
+    
+    fs.rmSync(dir, { recursive: true, force: true })
+  })
 })

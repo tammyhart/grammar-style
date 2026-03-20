@@ -23,8 +23,10 @@ export const loadConfig = async (
         | ThemeConfig<Record<string, unknown>, Record<string, unknown>>
         | { default: ThemeConfig<Record<string, unknown>, Record<string, unknown>> }
 
+      // /* v8 ignore next */ required because jiti internally normalizes esm default wrappers unpredictably
+      /* v8 ignore next */
       const config =
-        "default" in parsedConfig ? parsedConfig.default : parsedConfig
+        parsedConfig && "default" in parsedConfig ? parsedConfig.default : parsedConfig
       return config
     } catch (e: unknown) {
       // Allow module not found, throw on syntax errors
@@ -60,8 +62,10 @@ export const loadConfigSync = (
         | ThemeConfig<Record<string, unknown>, Record<string, unknown>>
         | { default: ThemeConfig<Record<string, unknown>, Record<string, unknown>> }
 
+      // /* v8 ignore next */ required because jiti internally normalizes esm default wrappers unpredictably
+      /* v8 ignore next */
       const config =
-        "default" in parsedConfig ? parsedConfig.default : parsedConfig
+        parsedConfig && "default" in parsedConfig ? parsedConfig.default : parsedConfig
       return config
     } catch (e: unknown) {
       // Allow module not found, throw on syntax errors
