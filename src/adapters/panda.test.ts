@@ -1,17 +1,20 @@
-import { expect, test } from "vitest"
+import { expect, test, vi } from "vitest"
 import createPandaTheme from "./panda"
 
-test("createPandaTheme generates css variable mapping", () => {
-  const config = {
+vi.mock("../config", () => ({
+  loadConfigSync: () => ({
     primitives: {
       color: { brand: "#ff0000" }
     },
     semantics: {
       color: { primary: "color.brand" }
     }
-  }
+  })
+}));
+
+test("createPandaTheme generates css variable mapping", () => {
   
-  const result = createPandaTheme(config as any)
+  const result = createPandaTheme()
   
   expect((result.panda.semantics as any).color.primary).toBe("var(--color-primary)")
   expect((result.panda.primitives as any).color.brand).toBe("var(--color-brand)")

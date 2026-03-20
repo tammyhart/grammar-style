@@ -1,4 +1,5 @@
 import { createTheme } from "../core"
+import { loadConfigSync } from "../config"
 import type { ThemeConfig } from "../types"
 
 const isObject = (item: unknown): item is Record<string, unknown> => {
@@ -24,16 +25,55 @@ const createTailwindTheme = <
   P extends Record<string, unknown>,
   S extends Record<string, unknown>
 >(
-  config: ThemeConfig<P, S>
-) => {
-  const theme = createTheme(config)
+  ) => {
+  const loadedConfig = loadConfigSync() as ThemeConfig<P, S>;
+  if (!loadedConfig) throw new Error("Grammar Style: Could not find grammar.config.ts");
+  const theme = createTheme(loadedConfig)
+
+  const p = theme.primitives as Record<string, unknown>;
+  const s = theme.tokens as Record<string, unknown>;
+
+  const cssText = theme.cssText;
+  const media = theme.media;
+
+  const screens: Record<string, string> = {}
+  Object.keys(media).forEach(k => {
+    // Media values look like `@media (max-width: calc(40rem - 1px))` or `@media (min-width: 40rem)`
+    // Tailwind just needs the inner value: `{ max: 'calc(40rem - 1px)' }` or `'40rem'`
+    const query = media[k] as string;
+    const match = query.match(/\((min-width|max-width):\s*(.*?)\)/);
+    if (match) {
+       if (match[1] === 'max-width') {
+          screens[k] = { max: match[2] } as any;
+       } else {
+          screens[k] = match[2];
+       }
+    }
+  })
 
   return {
-    ...theme,
-    tailwind: {
-      primitives: mapToTailwindVars(theme.primitives as Record<string, unknown>) as P,
-      semantics: mapToTailwindVars(theme.tokens as Record<string, unknown>) as S,
-    },
+    cssText,
+    theme: {
+      screens,
+      extend: {
+        colors: {
+          ...(isObject(p.color) ? mapToTailwindVars(p.color as any, ["color"]) : {}),
+          ...(isObject(s.color) ? mapToTailwindVars(s.color as any, ["color"]) : {}),
+        },
+        spacing: {
+          ...(isObject(p.size) ? mapToTailwindVars(p.size as any, ["size"]) : {}),
+          ...(isObject(s.spacing) ? mapToTailwindVars(s.spacing as any, ["spacing"]) : {}),
+        },
+        borderRadius: {
+          ...(isObject(p.radius) ? mapToTailwindVars(p.radius as any, ["radius"]) : {}),
+          ...(isObject(s.radius) ? mapToTailwindVars(s.radius as any, ["radius"]) : {}),
+        },
+        boxShadow: {
+          ...(isObject(p.shadow) ? mapToTailwindVars(p.shadow as any, ["shadow"]) : {}),
+          ...(isObject(s.shadow) ? mapToTailwindVars(s.shadow as any, ["shadow"]) : {}),
+        }
+      }
+    }
   }
 }
 

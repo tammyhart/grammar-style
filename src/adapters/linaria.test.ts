@@ -1,19 +1,17 @@
-import { expect, test } from "vitest"
+import { expect, test, vi } from "vitest"
 import createLinariaTheme from "./linaria"
 
+vi.mock("../config", () => ({
+  loadConfigSync: () => ({
+    primitives: { color: { brand: "#ff0000" } },
+    semantics: { color: { primary: "color.brand" } }
+  })
+}));
+
 test("createLinariaTheme generates expected structure", () => {
-  const config = {
-    primitives: {
-      color: { brand: "#ff0000" }
-    },
-    semantics: {
-      primary: "color.brand"
-    }
-  }
-  
   // Just testing if it returns the right keys since evaluating css tag might throw without babel plugin!
   try {
-    const result = createLinariaTheme(config as any)
+    const result = createLinariaTheme()
     expect(result.globals).toBeDefined()
     expect(result.cssText).toBeDefined()
   } catch (err: any) {

@@ -4,6 +4,8 @@ export default defineGrammar({
   options: {
     breakpoints: {
       palm: "size.500",
+      lap: "size.1000",
+      desk: "size.1400",
     },
     opacities: [5, 10, 33, 66, 100],
   },

@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Global, css } from "@emotion/react"
 import { createTheme } from "../core"
+import { loadConfigSync } from "../config"
 import type { ThemeConfig } from "../types"
 
 const isObject = (item: unknown): item is Record<string, unknown> => {
@@ -26,9 +27,10 @@ const createEmotionTheme = <
   P extends Record<string, unknown>,
   S extends Record<string, unknown>
 >(
-  config: ThemeConfig<P, S>
-) => {
-  const theme = createTheme(config)
+  ) => {
+  const loadedConfig = loadConfigSync() as ThemeConfig<P, S>;
+  if (!loadedConfig) throw new Error("Grammar Style: Could not find grammar.config.ts");
+  const theme = createTheme(loadedConfig)
 
   // Returns a reusable React component using pure render functions to avoid forcing TSX parsing
   const GlobalThemeStyle = () =>

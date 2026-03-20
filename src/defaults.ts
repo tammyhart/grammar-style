@@ -35,11 +35,11 @@ export const generateSizes = () => {
 export const defaultSizes = generateSizes()
 
 export const baseBreakpoints = {
-  palm: "size.600",
-  grip: "size.800",
-  lap: "size.1000",
-  desk: "size.1200",
-  wall: "size.1400",
+  sm: "size.640",
+  md: "size.768",
+  lg: "size.1024",
+  xl: "size.1280",
+  xxl: "size.1536",
 } as const
 
 export type BaseBreakpointName = keyof typeof baseBreakpoints
@@ -47,8 +47,9 @@ export type BreakpointName = BaseBreakpointName | `${BaseBreakpointName}Max`
 
 export type ValidBreakpointValue =
   | `size.${ValidSizeStr}`
-  | `size.${ValidSizeStr} - size.1`
+  | `calc(size.${ValidSizeStr} - 1px)`
   | `${number}rem`
+  | `calc(${number}rem - 1px)`
 
 /* v8 ignore next 3 */
 const generateBreakpoints = (
@@ -59,10 +60,9 @@ const generateBreakpoints = (
   
   for (const [key, value] of Object.entries(safeBpsToParse)) {
     if (String(value).startsWith("size.")) {
-      bps[`${key}Max`] = `${value} - size.1`
+      bps[`${key}Max`] = `calc(${value} - 1px)`
     } else if (String(value).endsWith("rem")) {
-      const num = parseFloat(String(value))
-      bps[`${key}Max`] = `${num - 0.0625}rem`
+      bps[`${key}Max`] = `calc(${value} - 1px)`
     }
   }
   

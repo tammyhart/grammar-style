@@ -1,5 +1,6 @@
 import { createGlobalStyle } from "styled-components"
 import { createTheme } from "../core"
+import { loadConfigSync } from "../config"
 import type { ThemeConfig } from "../types"
 
 const isObject = (item: unknown): item is Record<string, unknown> => {
@@ -25,9 +26,10 @@ const createStyledComponentsTheme = <
   P extends Record<string, unknown>,
   S extends Record<string, unknown>
 >(
-  config: ThemeConfig<P, S>
-) => {
-  const theme = createTheme(config)
+  ) => {
+  const loadedConfig = loadConfigSync() as ThemeConfig<P, S>;
+  if (!loadedConfig) throw new Error("Grammar Style: Could not find grammar.config.ts");
+  const theme = createTheme(loadedConfig)
 
   // Explicitly casting the global CSS injection to any momentarily if 
   // complex DOM Types aren't loaded in the consuming project, though 

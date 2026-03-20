@@ -174,7 +174,7 @@ defineGrammar({
     spacing: { value: "size.4" },
   },
   responsive: {
-    lap: {
+    lg: {
       // @ts-expect-error - property does not exist in semantics
       unknownProperty: "size.200",
     },
@@ -266,7 +266,7 @@ defineGrammar({
   options: {
     breakpoints: {
       // @ts-expect-error - Max breakpoints not allowed
-      lapMax: "60rem",
+      lgMax: "60rem",
     },
   },
   semantics: {},
@@ -279,7 +279,7 @@ defineGrammar({
   options: {
     breakpoints: {
       // @ts-expect-error - px not allowed in breakpoints
-      lap: "60px",
+      lg: "60px",
     },
   },
   semantics: {},
@@ -289,7 +289,7 @@ defineGrammar({
 defineGrammar({
   options: {
     breakpoints: {
-      lap: "60rem",
+      lg: "60rem",
     },
   },
   semantics: {},
@@ -301,7 +301,7 @@ defineGrammar({
 defineGrammar({
   semantics: {},
   responsive: {
-    lapMax: {},
+    lgMax: {},
   },
 })
 

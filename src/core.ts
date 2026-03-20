@@ -1,4 +1,4 @@
-import type { ThemeConfig } from "./types"
+import type { ThemeConfig, AllowedBreakpoints } from "./types"
 import { defaultSizes, defaultBreakpoints, defaultOpacities } from "./defaults"
 import { TOKEN_REGEX } from "./utils"
 const isObject = (item: unknown): item is Record<string, unknown> => {
@@ -248,10 +248,9 @@ export const createTheme = <
     ) {
       const valStr = value as string
       if (valStr.startsWith("size.")) {
-        breakpoints[`${key}Max`] = `${valStr} - size.1`
+        breakpoints[`${key}Max`] = `calc(${valStr} - 1px)`
       } else if (valStr.endsWith("rem")) {
-        const num = parseFloat(valStr)
-        breakpoints[`${key}Max`] = `${num - 0.0625}rem`
+        breakpoints[`${key}Max`] = `calc(${valStr} - 1px)`
       }
     }
   })
@@ -337,26 +336,16 @@ export const createTheme = <
       if (bpValue) {
         let bpValueStr = bpValue as string
 
-        // Resolve math evaluation like "size.800 - size.1" natively into rem calculations
-        if (bpValueStr.includes(" - ")) {
-          const [left, right] = bpValueStr.split(" - ")
-          if (
-            left.startsWith("size.") &&
-            right.startsWith("size.") &&
-            primitives.size
-          ) {
-            const key1 = left.split(".")[1] as keyof typeof primitives.size
-            const key2 = right.split(".")[1] as keyof typeof primitives.size
-
-            const val1 = primitives.size[key1] as string | undefined
-            const val2 = primitives.size[key2] as string | undefined
-
-            if (val1 && val2) {
-              const num1 = parseFloat(val1)
-              const num2 = parseFloat(val2)
-              bpValueStr = `${num1 - num2}rem`
+        // Resolve max-width math evaluation like "calc(size.800 - 1px)" naturally
+        if (bpValueStr.startsWith("calc(") && bpValueStr.includes(" - 1px)")) {
+          let innerToken = bpValueStr.replace("calc(", "").replace(" - 1px)", "")
+          if (innerToken.startsWith("size.") && primitives.size) {
+            const sizeKey = innerToken.split(".")[1] as keyof typeof primitives.size
+            if (primitives.size[sizeKey]) {
+              innerToken = primitives.size[sizeKey] as string
             }
           }
+          bpValueStr = `calc(${innerToken} - 1px)`
         }
         // Resolve standard "size.800"
         else if (bpValueStr.startsWith("size.") && primitives.size) {
@@ -398,9 +387,34 @@ export const createTheme = <
   cssText += modesCssText
   cssText += responsiveCssText
 
+  const media: Record<string, string> = {}
+  Object.entries(breakpoints).forEach(([bpName, bpValue]) => {
+    let bpValueStr = bpValue as string
+
+    if (bpValueStr.startsWith("calc(") && bpValueStr.includes(" - 1px)")) {
+      let innerToken = bpValueStr.replace("calc(", "").replace(" - 1px)", "")
+      if (innerToken.startsWith("size.") && primitives.size) {
+        const sizeKey = innerToken.split(".")[1] as keyof typeof primitives.size
+        if (primitives.size[sizeKey]) {
+          innerToken = primitives.size[sizeKey] as string
+        }
+      }
+      bpValueStr = `calc(${innerToken} - 1px)`
+    } else if (bpValueStr.startsWith("size.") && primitives.size) {
+      const sizeKey = bpValueStr.split(".")[1] as keyof typeof primitives.size
+      if (primitives.size[sizeKey]) {
+        bpValueStr = primitives.size[sizeKey] as string
+      }
+    }
+
+    const condition = bpName.endsWith("Max") ? `max-width` : `min-width`
+    media[bpName] = `@media (${condition}: ${bpValueStr})`
+  })
+
   return {
     cssText,
     tokens: semantics as S,
     primitives: primitives as P,
+    media: media as Record<AllowedBreakpoints<ThemeConfig<P, S>>, string>,
   }
 }

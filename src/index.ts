@@ -13,6 +13,7 @@ export function defineGrammar<
 
 export { createTheme } from "./core"
 export { default as token } from "./token"
+export { default as media, breakpoint } from "./media"
 export { loadConfig } from "./config"
 
 // Expose defaults directly for manual user reference if needed

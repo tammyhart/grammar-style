@@ -11,8 +11,8 @@ describe("Defaults generator", () => {
   })
 
   it("generates max breakpoints automatically by subtracting size.1", () => {
-    const palm = baseBreakpoints.palm
-    expect(defaultBreakpoints.palmMax).toBe(`${palm} - size.1`)
+    const sm = baseBreakpoints.sm
+    expect(defaultBreakpoints.smMax).toBe(`calc(${sm} - 1px)`)
   })
 
   it("exports valid opacities structure matching logical scales", () => {
@@ -24,7 +24,7 @@ describe("Defaults generator", () => {
   it("properly converts rem unit breakpoints to Max values", () => {
     const customBps = { custom: "40rem" }
     const generated = generateBreakpoints(customBps) as any
-    expect(generated.customMax).toBe("39.9375rem")
+    expect(generated.customMax).toBe("calc(40rem - 1px)")
   })
 
   it("ignores non-matching breakpoint values for generating maxes", () => {
@@ -36,7 +36,7 @@ describe("Defaults generator", () => {
 
   it("uses baseBreakpoints as the default argument when called with no arguments", () => {
     const generated = generateBreakpoints()
-    expect(generated.palm).toBe(baseBreakpoints.palm)
-    expect(generated.palmMax).toBe(`${baseBreakpoints.palm} - size.1`)
+    expect(generated.sm).toBe(baseBreakpoints.sm)
+    expect(generated.smMax).toBe(`calc(${baseBreakpoints.sm} - 1px)`)
   })
 })

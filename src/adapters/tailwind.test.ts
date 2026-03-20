@@ -1,19 +1,20 @@
-import { expect, test } from "vitest"
+import { expect, test, vi } from "vitest"
 import createTailwindTheme from "./tailwind"
 
-test("createTailwindTheme generates css variable mapping", () => {
-  const config = {
+vi.mock("../config", () => ({
+  loadConfigSync: () => ({
     primitives: {
       color: { brand: "#ff0000" }
     },
     semantics: {
       color: { primary: "color.brand" }
     }
-  }
+  })
+}))
+
+test("createTailwindTheme generates css variable mapping", () => {
+  const result = createTailwindTheme()
   
-  const result = createTailwindTheme(config as any)
-  
-  // Checking that it maps out the deeply nested property to its corresponding linear var() name
-  expect((result.tailwind.semantics as any).color.primary).toBe("var(--color-primary)")
-  expect((result.tailwind.primitives as any).color.brand).toBe("var(--color-brand)")
+  expect((result.theme?.extend?.colors as any)?.primary).toBe("var(--color-primary)")
+  expect((result.theme?.extend?.colors as any)?.brand).toBe("var(--color-brand)")
 })

@@ -98,11 +98,20 @@ describe("createTheme", () => {
     // desktop = size.1000 -> properly maps to 62.5rem math
     expect(theme.cssText).toContain("@media (min-width: 62.5rem) {")
     
-    // desktopMax = size.1000 - size.1 -> 62.5 - 0.0625 = 62.4375rem
-    expect(theme.cssText).toContain("@media (max-width: 62.4375rem) {")
+    // desktopMax = size.1000 - size.1 -> calc(62.5rem - 1px)
+    expect(theme.cssText).toContain("@media (max-width: calc(62.5rem - 1px)) {")
 
-    // mobileMax = 20rem - 0.0625rem = 19.9375rem
-    expect(theme.cssText).toContain("@media (max-width: 19.9375rem) {")
+    // mobileMax = calc(20rem - 1px)
+    expect(theme.cssText).toContain("@media (max-width: calc(20rem - 1px)) {")
+  })
+
+  it("returns generated media strings inside the theme configuration result", () => {
+    const theme = createTheme(mockConfig as any)
+
+    expect(theme.media.desktop).toBe("@media (min-width: 62.5rem)")
+    expect(theme.media.desktopMax).toBe("@media (max-width: calc(62.5rem - 1px))")
+    expect(theme.media.mobile).toBe("@media (min-width: 20rem)")
+    expect(theme.media.mobileMax).toBe("@media (max-width: calc(20rem - 1px))")
   })
 
 

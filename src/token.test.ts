@@ -50,18 +50,16 @@ describe("token", () => {
   })
 
   it("handles CSS math logic natively at runtime", () => {
-    // @ts-expect-error - TS doesn't natively parse loose CSS calc strings
+    // Tests native TS compiler evaluation of isolated math operators
     expect(token("calc(size.100 * 2)")).toBe("calc(var(--size-100) * 2)")
     
-    // @ts-expect-error
-    expect(token("translate(-size.50, size.50)")).toBe(
-      "translate(var(--size-50-negative), var(--size-50))"
+    expect(token("translate(-size.48, size.48)")).toBe(
+      "translate(var(--size-48-negative), var(--size-48))"
     )
   })
 
   it("handles fast-path bypass for strings without dots", () => {
     // Should bypass token parsing completely
-    // @ts-expect-error
     expect(token("inherit")).toBe("inherit")
     // @ts-expect-error
     expect(token("24px")).toBe("24px")

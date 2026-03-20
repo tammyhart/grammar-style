@@ -1,21 +1,24 @@
 import { expect, test, vi } from "vitest"
 import createStyledComponentsTheme from "./styled-components"
 
-vi.mock("styled-components", () => ({
-  createGlobalStyle: vi.fn(() => "MockedGlobalStyle")
-}))
-
-test("createStyledComponentsTheme generates css mapping and GlobalThemeStyle", () => {
-  const config = {
+vi.mock("../config", () => ({
+  loadConfigSync: () => ({
     primitives: {
       color: { brand: "#ff0000" }
     },
     semantics: {
       color: { primary: "color.brand" }
     }
-  }
+  })
+}));
+
+vi.mock("styled-components", () => ({
+  createGlobalStyle: vi.fn(() => "MockedGlobalStyle")
+}))
+
+test("createStyledComponentsTheme generates css mapping and GlobalThemeStyle", () => {
   
-  const result = createStyledComponentsTheme(config as any)
+  const result = createStyledComponentsTheme()
   
   expect((result.styledComponents.semantics as any).color.primary).toBe("var(--color-primary)")
   expect(result.GlobalThemeStyle).toBeDefined()
