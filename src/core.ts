@@ -52,12 +52,16 @@ const createCssVars = (
                 
                 if (current.startsWith('#')) {
                   let hex = current.substring(1);
-                  if (hex.length === 3) hex = hex.split('').map(x => x + x).join('');
+                  if (hex.length === 3 || hex.length === 4) hex = hex.split('').map(x => x + x).join('');
                   if (hex.length === 6 || hex.length === 8) {
                     const r = parseInt(hex.slice(0, 2), 16);
                     const g = parseInt(hex.slice(2, 4), 16);
                     const b = parseInt(hex.slice(4, 6), 16);
-                    convertedString = `rgba(${r}, ${g}, ${b}, ${a})`;
+                    let finalA = a;
+                    if (hex.length === 8) {
+                      finalA = a * (parseInt(hex.slice(6, 8), 16) / 255);
+                    }
+                    convertedString = `rgba(${r}, ${g}, ${b}, ${parseFloat(finalA.toFixed(4))})`;
                   }
                 } else if (current.startsWith('hsl') || current.startsWith('rgb')) {
                   const inner = current.match(/\((.*)\)/)?.[1];
@@ -111,14 +115,14 @@ const createCssVars = (
   }, "")
 }
 
-const getUsedSizes = (
+const getUsedTokens = (
   config: ThemeConfig<Record<string, unknown>, Record<string, unknown>>,
 ): Set<string> => {
   const used = new Set<string>()
 
   const scanObj = (obj: unknown) => {
     if (typeof obj === "string") {
-      const match = obj.match(/-?size\.([A-Za-z0-9\-\.]+)/g)
+      const match = obj.match(new RegExp(TOKEN_REGEX.source, "g"))
       if (match) match.forEach(m => used.add(m))
     } else if (Array.isArray(obj)) {
       obj.forEach(scanObj)
@@ -150,7 +154,7 @@ const getUsedSizes = (
     path = eval(`require('node:path')`)
   } catch (e) {}
 
-  if (fs && path) {
+  if (fs && path && typeof process !== 'undefined' && process.cwd) {
     const cwd = process.cwd()
     const contentPaths = config.options?.content || [
       "./src",
@@ -187,9 +191,13 @@ const getUsedSizes = (
             } else if (file.match(/\.(tsx?|jsx?|mdx?|html?|vue|svelte)$/)) {
               results.push(filePath)
             }
-          } catch (e) {}
+          } catch (e) {
+            console.warn("Grammar Style scanner dir reading: " + e)
+          }
         })
-      } catch (e) {}
+      } catch (e) {
+        console.warn("Grammar Style scanner file reading: " + e)
+      }
       return results
     }
 
@@ -198,14 +206,17 @@ const getUsedSizes = (
       filesToScan.push(...getFiles(path.resolve(cwd, p)))
     })
 
+    const scannerRegex = new RegExp(TOKEN_REGEX.source, "g")
     filesToScan.forEach(file => {
       try {
         const content = fs.readFileSync(file, "utf8")
-        const matches = content.match(/-?size\.([A-Za-z0-9\-]+)/g)
+        const matches = content.match(scannerRegex)
         if (matches) {
           matches.forEach((m: string) => used.add(m))
         }
-      } catch (e) {}
+      } catch (e) {
+        console.warn("Grammar Style content reading: " + e)
+      }
     })
   }
 
@@ -266,18 +277,31 @@ export const createTheme = <
 
   const customOpacitiesOut: Record<string, string> = {}
   
-  const usedSizes = getUsedSizes(
+  const usedTokens = getUsedTokens(
     config as ThemeConfig<Record<string, unknown>, Record<string, unknown>>,
   )
   const primitivesForCss = { ...primitives } as P & {
     size?: Record<string, string>
   }
 
+  const tokenRegexScanner = new RegExp(TOKEN_REGEX.source, "g");
+  Array.from(usedTokens).forEach(t => {
+     let tempObj = { value: t };
+     try {
+       createCssVars(tempObj as any, [], true, primitivesForCss as any, customOpacitiesOut);
+     } catch(e) {}
+     t.replace(tokenRegexScanner, (match, isNegative, tokenTarget) => {
+        usedTokens.add(tokenTarget);
+        if (isNegative) usedTokens.add(`-${tokenTarget}`);
+        return match;
+     });
+  });
+
   if (primitivesForCss.size) {
     const filteredSizes: Record<string, string> = {}
     Object.entries(primitivesForCss.size).forEach(([key, value]) => {
-      const isPosUsed = usedSizes.has(`size.${key}`) || usedSizes.has(key)
-      const isNegUsed = usedSizes.has(`-size.${key}`)
+      const isPosUsed = usedTokens.has(`size.${key}`) || usedTokens.has(key)
+      const isNegUsed = usedTokens.has(`-size.${key}`)
       
       if (isPosUsed || isNegUsed) {
         filteredSizes[key] = value as string

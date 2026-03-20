@@ -7,14 +7,14 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.js"
     },
     "./adapters/*": {
+      "types": "./dist/adapters/*.d.ts",
       "import": "./dist/adapters/*.mjs",
-      "require": "./dist/adapters/*.js",
-      "types": "./dist/adapters/*.d.ts"
+      "require": "./dist/adapters/*.js"
     }
   },
   "files": [

@@ -196,20 +196,37 @@ export type TokenPath =
 
 export type IsStrictToken<S extends string> =
   S extends "" ? true
+  : S extends "-" ? true
   : S extends `${string}px${string}` ? `Error: 'px' values are not allowed`
   : S extends TokenPath ? true
-  : S extends `-${infer Rest}` ? (Rest extends TokenPath ? true : `Error: invalid negative token: '${Rest}'${DidYouMeanStrictSuffix<S>}`)
-  : S extends `${infer Prefix}/${infer _Ops}` ? (Prefix extends TokenPath ? true : `Error: invalid token before opacity: '${Prefix}'${DidYouMeanStrictSuffix<S>}`)
-  : S extends `blur(${infer Inner})` ? (Inner extends TokenPath ? true : `Error: invalid token inside blur: '${Inner}'${DidYouMeanStrictSuffix<S>}`)
-  : `Error: invalid token: '${S}'${DidYouMeanStrictSuffix<S>}`
+  : S extends `-${infer Rest}` ? (
+      Rest extends TokenPath ? true 
+      : Rest extends `${string}.${string}` ? `Error: invalid negative token: '${Rest}'${DidYouMeanStrictSuffix<S>}` 
+      : true
+    )
+  : S extends `${infer Prefix}/${infer _Ops}` ? (
+      Prefix extends TokenPath ? true 
+      : Prefix extends `${string}.${string}` ? `Error: invalid token before opacity: '${Prefix}'${DidYouMeanStrictSuffix<S>}` 
+      : true
+    )
+  : S extends `${string}.${string}` ? `Error: invalid token: '${S}'${DidYouMeanStrictSuffix<S>}`
+  : true
 
-export type ValidateTokenString<S extends string> = string extends S ? S
-  : S extends `${infer First}, ${infer Rest}` ? (ValidateTokenString<First> extends First ? (ValidateTokenString<Rest> extends Rest ? S : ValidateTokenString<Rest>) : ValidateTokenString<First>)
-  : S extends `${infer First},${infer Rest}` ? (ValidateTokenString<First> extends First ? (ValidateTokenString<Rest> extends Rest ? S : ValidateTokenString<Rest>) : ValidateTokenString<First>)
-  : S extends `${infer First} ${infer Rest}` ? (IsStrictToken<First> extends true ? (ValidateTokenString<Rest> extends Rest ? S : ValidateTokenString<Rest>) : IsStrictToken<First> extends string ? IsStrictToken<First> : `Error: invalid token: '${First}'`)
-  : IsStrictToken<S> extends true ? S
-  : IsStrictToken<S> extends string ? IsStrictToken<S>
-  : `Error: invalid token: '${S}'`
+export type CleanPunctuation<S extends string> =
+  S extends `${infer L}(${infer R}` ? CleanPunctuation<`${L} ${R}`>
+  : S extends `${infer L})${infer R}` ? CleanPunctuation<`${L} ${R}`>
+  : S extends `${infer L},${infer R}` ? CleanPunctuation<`${L} ${R}`>
+  : S extends `${infer L}*${infer R}` ? CleanPunctuation<`${L} ${R}`>
+  : S extends `${infer L}+${infer R}` ? CleanPunctuation<`${L} ${R}`>
+  : S
+
+export type ValidateWords<S extends string> = string extends S ? S
+  : S extends `${infer First} ${infer Rest}` ? (
+      IsStrictToken<First> extends true ? ValidateWords<Rest> : IsStrictToken<First>
+    )
+  : IsStrictToken<S>
+
+export type ValidateTokenString<S extends string> = ValidateWords<CleanPunctuation<S>> extends true ? S : ValidateWords<CleanPunctuation<S>> extends string ? ValidateWords<CleanPunctuation<S>> : S
 
 // Force exact match by returning never if the user supplies a key that does not exist in the shape
 export type StrictDeepPartial<Shape, Input> =
@@ -366,7 +383,7 @@ export type AllowedBreakpoints<C> =
 export type ValidateResponsive<R, S, P, C> = {
   [K in keyof R]: K extends AllowedBreakpoints<C> ?
     ValidateOverrides<R[K], DeepPartialPaths<SafeNoInfer<S>, P, AllowedOpacities<C> & (string | number)>>
-  : "Error: Responsive key must be a valid base breakpoint name. Max breakpoints are generated natively."
+  : "Error: Responsive key must be a valid base breakpoint name (or its 'Max' equivalent)."
 }
 
 export type ValidatedConfig<

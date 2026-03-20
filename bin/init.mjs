@@ -23,7 +23,9 @@ async function run() {
 
 // Or use a function to map your semantics directly from the inferred primitive types:
 const config = defineGrammar({
-  breakpoints: defaultBreakpoints,
+  options: {
+    breakpoints: defaultBreakpoints,
+  },
 
   // 1. Define your raw primitive values (e.g., color palettes, base sizing)
   primitives: {
