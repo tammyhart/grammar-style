@@ -290,6 +290,7 @@ export type ExtractModeOptions<C> =
   : never
 
 export type HasCustomModes<C> =
+  string extends ExtractModeOptions<C> ? false :
   [ExtractModeOptions<C>] extends [never] ? false : true
 
 export type AllowedModes<C> =
@@ -304,6 +305,7 @@ export type ExtractO<C> =
 
 export type CustomOpacityKeys<C> = ExtractO<C>
 export type HasCustomOpacities<C> =
+  number extends CustomOpacityKeys<C> ? false :
   [CustomOpacityKeys<C>] extends [never] ? false : true
 export type HasOnlyDefaultOpacityOverrides<C> =
   Exclude<CustomOpacityKeys<C>, keyof DefaultOpacities> extends never ? true
@@ -365,7 +367,7 @@ export type ExtractB<C> =
   : {}
 
 export type CustomKeys<C> = keyof ExtractB<C> & string
-export type HasCustomBreakpoints<C> = CustomKeys<C> extends never ? false : true
+export type HasCustomBreakpoints<C> = string extends CustomKeys<C> ? false : CustomKeys<C> extends never ? false : true
 export type HasOnlyDefaultOverrides<C> =
   Exclude<CustomKeys<C>, BaseBreakpointName> extends never ? true : false
 

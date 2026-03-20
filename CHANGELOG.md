@@ -1,5 +1,11 @@
 # grammar-style
 
+## 0.3.7
+
+### Patch Changes
+
+- Fixed an issue where `media` objects would loosely fallback to `string` in TypeScript without a customized configuration, incorrectly allowing any invalid media key lookup (like `media.lap`). Modifying partial defaults now safely infers retained default breakpoints.
+
 ## 0.3.6
 
 ### Patch Changes

@@ -330,3 +330,41 @@ defineGrammar({
   },
   semantics: {},
 })
+
+// ----------------------------------------------------------------------------
+// RULE: Modifying single default breakpoint retains all other defaults
+// ----------------------------------------------------------------------------
+defineGrammar({
+  options: {
+    breakpoints: {
+      sm: "size.10",
+    },
+  },
+  semantics: {},
+  responsive: {
+    md: {},    // Valid: Retained default
+    mdMax: {}, // Valid: Retained generated max
+    sm: {},    // Valid: Modified
+    smMax: {}, // Valid: Modified generated max
+    // @ts-expect-error - 'lap' is not a valid breakpoint
+    lap: {},
+  },
+})
+
+// ----------------------------------------------------------------------------
+// RULE: Passing completely custom breakpoint removes all defaults
+// ----------------------------------------------------------------------------
+defineGrammar({
+  options: {
+    breakpoints: {
+      lap: "100rem",
+    },
+  },
+  semantics: {},
+  responsive: {
+    lap: {},
+    lapMax: {},
+    // @ts-expect-error - 'md' default was removed because of entirely new custom dictionary
+    md: {},
+  },
+})

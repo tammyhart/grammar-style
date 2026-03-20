@@ -108,10 +108,11 @@ describe("createTheme", () => {
   it("returns generated media strings inside the theme configuration result", () => {
     const theme = createTheme(mockConfig as any)
 
-    expect(theme.media.desktop).toBe("@media (min-width: 62.5rem)")
-    expect(theme.media.desktopMax).toBe("@media (max-width: calc(62.5rem - 1px))")
-    expect(theme.media.mobile).toBe("@media (min-width: 20rem)")
-    expect(theme.media.mobileMax).toBe("@media (max-width: calc(20rem - 1px))")
+    const media = theme.media as Record<string, string>
+    expect(media.desktop).toBe("@media (min-width: 62.5rem)")
+    expect(media.desktopMax).toBe("@media (max-width: calc(62.5rem - 1px))")
+    expect(media.mobile).toBe("@media (min-width: 20rem)")
+    expect(media.mobileMax).toBe("@media (max-width: calc(20rem - 1px))")
   })
 
 
@@ -191,5 +192,41 @@ describe("createTheme", () => {
     // It shouldn't crash.
     const result = createTheme({ semantics: {} })
     expect(result).toBeDefined()
+  })
+
+  it("retains all default breakpoints when only overriding an existing one", () => {
+    const config = {
+      options: {
+        breakpoints: {
+          sm: "10rem"
+        }
+      },
+      semantics: {}
+    }
+    const theme = createTheme(config)
+    expect(theme.media.sm).toBe("@media (min-width: 10rem)")
+    expect(theme.media.smMax).toBe("@media (max-width: calc(10rem - 1px))")
+    expect(theme.media.md).toBeDefined() // Re-asserts the default behavior retained the rest
+  })
+
+  it("removes default breakpoints when establishing an entirely custom dictionary", () => {
+    const config = {
+      options: {
+        breakpoints: {
+          customGrid: "size.900"
+        }
+      },
+      primitives: {
+        size: {
+          "900": "90rem"
+        }
+      },
+      semantics: {}
+    }
+    const theme = createTheme(config)
+    const media = theme.media as Record<string, string>
+    expect(media.customGrid).toBe("@media (min-width: 90rem)")
+    expect(media.customGridMax).toBe("@media (max-width: calc(90rem - 1px))")
+    expect(media.sm).toBeUndefined() // Wiped 
   })
 })
