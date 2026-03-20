@@ -64,6 +64,7 @@
     "build": "tsup",
     "coverage": "vitest run --coverage --coverage.reporter=text",
     "prepublishOnly": "npm run build",
+    "release": "changeset version && git add . && git commit -m \"chore: release\" && changeset tag",
     "sandbox": "npx jiti test/sandbox.ts",
     "test": "vitest run && npm run test:types",
     "test:types": "tsc --noEmit --strict src/types.test-d.ts"
