@@ -12,7 +12,9 @@ let memoizedBreakpoint: Record<string, string> | null = hasGenerated ? genBreakp
 
 const isBrowser = typeof window !== "undefined" && typeof window.document !== "undefined"
 
-const media: Record<Breakpoints, string> = new Proxy({} as Record<Breakpoints, string>, {
+const media: Record<Breakpoints, string> = hasGenerated 
+  ? (genMedia as Record<Breakpoints, string>)
+  : new Proxy({} as Record<Breakpoints, string>, {
   get(target, prop) {
     if (typeof prop === "symbol") return Reflect.get(target, prop)
     if (prop === "then" || prop === "__esModule") return undefined
@@ -62,7 +64,9 @@ const media: Record<Breakpoints, string> = new Proxy({} as Record<Breakpoints, s
   },
 })
 
-export const breakpoint: Record<Breakpoints, string> = new Proxy({} as Record<Breakpoints, string>, {
+export const breakpoint: Record<Breakpoints, string> = hasGenerated
+  ? (genBreakpoint as Record<Breakpoints, string>)
+  : new Proxy({} as Record<Breakpoints, string>, {
   get(target, prop) {
     if (typeof prop === "symbol") return Reflect.get(target, prop)
     if (prop === "then" || prop === "__esModule") return undefined

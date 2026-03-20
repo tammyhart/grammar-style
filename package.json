@@ -1,6 +1,6 @@
 {
   "name": "grammar-style",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "description": "A zero-runtime token resolution engine for design systems.",
   "keywords": [
     "design-tokens",

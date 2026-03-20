@@ -1,5 +1,11 @@
 # grammar-style
 
+## 0.3.9
+
+### Patch Changes
+
+- Fixed an issue where the global `media` and `breakpoint` objects remained wrapped in a `Proxy` even when pre-generated via the CLI. These are now exported as clean POJOs natively when `hasGenerated` is true, enabling zero-config integration with strict AST extractors like Linaria and Vanilla-Extract.
+
 ## 0.3.8
 
 ### Patch Changes
