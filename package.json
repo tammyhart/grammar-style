@@ -1,12 +1,26 @@
 {
   "name": "grammar-style",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "A zero-runtime token resolution engine for design systems.",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "exports": {
-    ".": "./index.js",
-    "./adapters/*": "./adapters/*.js"
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./adapters/*": {
+      "import": "./dist/adapters/*.mjs",
+      "require": "./dist/adapters/*.js",
+      "types": "./dist/adapters/*.d.ts"
+    }
   },
+  "files": [
+    "dist",
+    "bin"
+  ],
   "bin": {
     "grammar-init": "bin/init.mjs"
   },
@@ -14,6 +28,7 @@
     "test": "test"
   },
   "scripts": {
+    "build": "tsup",
     "test": "vitest run && npm run test:types",
     "test:types": "tsc --noEmit --strict src/types.test-d.ts",
     "sandbox": "npx jiti test/sandbox.ts",
@@ -23,8 +38,19 @@
     "type": "git",
     "url": "git+https://github.com/grammar-style/grammar-style.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "design-tokens",
+    "css-in-js",
+    "linaria",
+    "tailwind",
+    "styled-components",
+    "theme",
+    "grammar-style",
+    "stylex",
+    "panda",
+    "vanilla-extract"
+  ],
+  "author": "Grammar Style",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
@@ -62,6 +88,7 @@
     "react-dom": "^19.2.4",
     "styled-components": "^6.3.12",
     "tslib": "^2.8.1",
+    "tsup": "^8.5.1",
     "typescript": "^5.5.0",
     "vitest": "^4.1.0"
   }

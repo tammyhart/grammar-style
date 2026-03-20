@@ -19,9 +19,10 @@ async function run() {
   }
 
   // The template content
-  const template = `import { defineGrammar, defaultSizes, defaultBreakpoints } from "grammar-style"
+  const template = `import { defineGrammar, defaultBreakpoints } from "grammar-style"
 
-export default defineGrammar({
+// Or use a function to map your semantics directly from the inferred primitive types:
+const config = defineGrammar({
   breakpoints: defaultBreakpoints,
 
   // 1. Define your raw primitive values (e.g., color palettes, base sizing)
@@ -30,36 +31,6 @@ export default defineGrammar({
   },
 
   // 2. Map primitives to semantic names that you will use in your components
-  //    You can use a flat object with dot-notation primitive paths...
-  semantics: {
-    color: {
-      primary: {
-        base: "stone.100",
-      },
-      background: "stone.10",
-    },
-    // spacing: { base: "1.5rem" } 
-    // note: '1.5rem' isn't in primitives so this would error if we strict match.
-  },
-
-  // 3. (Optional) Provide mode overrides. E.g. dark mode
-  modes: {
-    dark: {
-      color: {
-        primary: {
-          base: "stone.10",
-        },
-        background: "stone.100",
-      },
-    },
-  },
-})
-
-// Or use a function to map your semantics directly from the inferred primitive types:
-export const genericConfig = defineGrammar({
-  primitives: {
-    stone: { 100: "#1A1A1A", 50: "#808080", 10: "#E6E6E6" },
-  },
   semantics: (p) => ({
     color: {
       primary: {
@@ -69,6 +40,15 @@ export const genericConfig = defineGrammar({
     },
   }),
 })
+
+// 🚀 Give grammar-style its autocomplete super-powers!
+declare module "grammar-style" {
+  export interface Register {
+    theme: typeof config
+  }
+}
+
+export default config
 `
 
   // Write the file
