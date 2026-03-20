@@ -4,13 +4,13 @@
 <a id="top"></a>
 
   <h1 style="border:none;">Design is a language. Governance is its grammar.</h1>
+  <p style="font-size: 1.25rem; opacity:0.75;">The TypeScript engine for design system architects who prioritize enforcement over flexibility.</p>
   <p>
     <img src="https://img.shields.io/npm/v/grammar-style" alt="NPM Version" />
     <img src="https://img.shields.io/npm/l/grammar-style" alt="License" />
     <img src="https://img.shields.io/badge/TypeScript-Strict-blue" alt="TypeScript Strict" />
     <img src="https://img.shields.io/badge/Coverage-100%25-brightgreen" alt="Coverage" />
   </p>
-  <p style="font-size: 1.25rem; opacity:0.75;">The TypeScript engine for design system architects who prioritize enforcement over flexibility.</p>
 </div>
 
 Build your design tokens once, and map them instantly into your favorite styling tools with strictly typed, auto-completing safety. Stop writing runtime token interpolations and embrace statically generated, strictly verified CSS variables.
@@ -29,11 +29,7 @@ Build your design tokens once, and map them instantly into your favorite styling
 - [Media Queries: `media` & `breakpoint`](#-media-queries-media--breakpoint)
 - [Adapters](#️-adapters)
 
----
-
 ## 🚀 Getting Started
-
-<a href="#top">⬆️ Back to Top</a>
 
 ```bash
 npm install grammar-style
@@ -45,11 +41,7 @@ Generate a `grammar.config.ts` boilerplate file right in your project:
 npx grammar-init
 ```
 
----
-
 ## 📓 Concept: `defineGrammar`
-
-<a href="#top">⬆️ Back to Top</a>
 
 The core of `grammar-style` is `defineGrammar`, the typed definition engine. Design systems often suffer from disconnected tokens across different surfaces. `defineGrammar` forces your config to strongly adhere to two layers: **Primitives** and **Semantics**.
 
@@ -88,9 +80,9 @@ declare module "grammar-style" {
 }
 ```
 
-## 📏 Built-in Primitives: `size`
-
 <a href="#top">⬆️ Back to Top</a>
+
+## 📏 Built-in Primitives: `size`
 
 The `size` primitive is special. It acts as a pre-populated grid scale built perfectly around strict UI layouts.
 
@@ -112,9 +104,9 @@ Grid sizes map tightly. Small sizes allowed are: `1, 2, 4, 6, 8, 10, 12, 16`. Be
 
 Because injecting 700+ size variables into global CSS hurts performance, `grammar-style` runs a lightning-fast static AST file scanner. It explicitly tree-shakes your Next.js/React filesystem and _only_ outputs CSS variables into `:root` for the exact sizes actively used in your codebase. This CSS tree correctly mounts via your adapter framework natively!
 
-## 🎛️ Options
-
 <a href="#top">⬆️ Back to Top</a>
+
+## 🎛️ Options
 
 The `options` block lets you overwrite the core rules of your token validation.
 
@@ -153,9 +145,9 @@ If you override a natively defined breakpoint key (e.g. `lg: "size.1400"`), `gra
 
 However, if your configuration injects _custom keys_ completely ignoring the native boundaries (e.g. `palm: "size.600"`), the compiler intelligently infers that you want to rewrite your layout rules from scratch. It effortlessly builds and spins up your custom `palmMax` scaling, but fully purges the standard `sm`, `md`, `lg` targets. This gives you a pristine Typescript autocomplete interface completely devoid of bloat or leftover unused defaults.
 
-## 🧱 Primitives
-
 <a href="#top">⬆️ Back to Top</a>
+
+## 🧱 Primitives
 
 The foundation structural layer. Here you dictate your hardcoded absolute properties—like your hex swatches (`#ff0000`), spacing logic, or unconstrained radii layers. You map these as standard nested objects (e.g. `border: { radius: "size.24" }`).
 
@@ -180,9 +172,9 @@ export const config = defineGrammar({
 })
 ```
 
-## 🧠 Semantics
-
 <a href="#top">⬆️ Back to Top</a>
+
+## 🧠 Semantics
 
 Your contextual intent mapping. Semantic mappings **cannot** resolve to hardcoded string strings—they must actively route to valid underlying Primitive dot-paths.
 
@@ -214,9 +206,9 @@ export const config = defineGrammar({
 })
 ```
 
-## 🌓 Modes
-
 <a href="#top">⬆️ Back to Top</a>
+
+## 🌓 Modes
 
 Use the `modes` object to map dark mode, high contrast, or unique theme variants natively. Simply provide a TypeScript-enforced deep-partial of your `semantics` object inside `modes: { dark: { ... } }`. `grammar-style` will automatically emit these overrides bound tightly behind native `[data-theme="dark"] { ... }` wrappers in your CSS output.
 
@@ -238,9 +230,9 @@ export const config = defineGrammar({
 })
 ```
 
-## 📱 Responsive
-
 <a href="#top">⬆️ Back to Top</a>
+
+## 📱 Responsive
 
 Handle media queries across standardized boundaries by partially overriding semantics exactly like `modes`.
 
@@ -275,11 +267,9 @@ export const config = defineGrammar({
 })
 ```
 
----
+<a href="#top">⬆️ Back to Top</a>
 
 ## 🎨 The Power of `token()`
-
-<a href="#top">⬆️ Back to Top</a>
 
 Once your grammar is defined, you'll need to safely consume those tokens inside your standard components. The `token()` utility translates your Typescript semantic paths exactly into the native CSS variables `grammar-style` constructs under the hood.
 
@@ -324,9 +314,9 @@ export const Box = () => (
 )
 ```
 
-## 📐 Media Queries: `media` & `breakpoint`
-
 <a href="#top">⬆️ Back to Top</a>
+
+## 📐 Media Queries: `media` & `breakpoint`
 
 In addition to `token()`, `grammar-style` natively exposes a `media` object directly from the root package. It is a Proxy that lazily inspects your `grammar.config` breakpoints and automatically evaluates them into properly formatted, reusable `@media` query strings.
 
@@ -362,9 +352,9 @@ export const boxStyle = style({
 
 > **Want to see full architecture breakdowns?** Check out the [Media Queries Documentation](./docs/media.md) for full implementation guides spanning Vanilla Extract, StyleX, Emotion, Linaria, and more alongside deep dives into Client-Side restrictions and explicit lazy-caching rules!
 
-## ⚙️ Adapters
-
 <a href="#top">⬆️ Back to Top</a>
+
+## ⚙️ Adapters
 
 `grammar-style` is framework-agnostic. We don't care what compiler you use to handle your resulting string literals. We offer out-of-the-box **Adapters** to inject your `grammar.config.ts` into multiple major styling frameworks seamlessly.
 
@@ -423,6 +413,8 @@ export default defineConfig({
 ```
 
 > **Using something else?** Check out the [Adapters Documentation](./docs/adapters.md) for full implementation guides spanning Styled Components, Vanilla Extract, StyleX, Emotion, and Linaria!
+
+<a href="#top">⬆️ Back to Top</a>
 
 <div align="center">
   <hr style="margin-block:2rem;" />
