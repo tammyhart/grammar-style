@@ -9,11 +9,17 @@ export const loadConfig = async (
   let resolve: any
   let createJiti: any
   try {
-    const pTarget = "node" + ":" + "path"
-    const jTarget = "ji" + "ti"
-    resolve = (await import(/* @vite-ignore */ pTarget)).resolve
-    const jMod = await import(/* @vite-ignore */ jTarget)
-    createJiti = jMod.createJiti || (jMod.default && jMod.default.createJiti) || jMod.default
+    const p = "node" + ":" + "path"
+    const j = "ji" + "ti"
+    const hasRequire = eval(`typeof require !== "undefined"`)
+    if (hasRequire) {
+      resolve = eval(`require("${p}")`).resolve
+      createJiti = eval(`require("${j}")`).createJiti
+    } else {
+      resolve = (await eval(`import("${p}")`)).resolve
+      const jMod = await eval(`import("${j}")`)
+      createJiti = jMod.createJiti || (jMod.default && jMod.default.createJiti) || jMod.default
+    }
   } catch (e) {
     return null
   }
@@ -69,8 +75,10 @@ export const loadConfigSync = (
   let resolve: any
   let createJiti: any
   try {
-    resolve = eval(`require("node:path")`).resolve
-    createJiti = eval(`require("jiti")`).createJiti
+    const p = "node" + ":" + "path"
+    const j = "ji" + "ti"
+    resolve = eval(`require("${p}")`).resolve
+    createJiti = eval(`require("${j}")`).createJiti
   } catch (e) {
     return null
   }

@@ -150,8 +150,10 @@ const getUsedTokens = (
       }
     | undefined
   try {
-    fs = eval(`require('node:fs')`)
-    path = eval(`require('node:path')`)
+    const f = "node" + ":" + "fs"
+    const p = "node" + ":" + "path"
+    fs = eval(`require('${f}')`)
+    path = eval(`require('${p}')`)
   } catch (e) {}
 
   if (fs && path && typeof process !== 'undefined' && process.cwd) {
