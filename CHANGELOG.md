@@ -1,10 +1,11 @@
 # grammar-style
 
-## 0.3.5
+## 0.3.6
 
 ### Patch Changes
 
-- chore: linaria babel patch
+- feat: Rearchitect adapter exports to allow clean `grammar-style/[adapter]` imports, avoiding Next.js/Linaria module evaluation crashes entirely.
+- fix: Remove `@linaria/core` and literal `css` wrapper from the linaria adapter core to prevent AST evaluation errors from WYW plugins.
 
 ## 0.3.4
 

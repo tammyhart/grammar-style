@@ -20,7 +20,7 @@ Drop `grammar-style` natively into your `tailwind.config.ts` to seamlessly map a
 
 ```typescript
 // tailwind.config.ts
-import { createTailwindTheme } from "grammar-style/adapters"
+import createTailwindTheme from "grammar-style/tailwind"
 
 // Automatically reads and parses grammar.config.ts locally
 const grammar = createTailwindTheme()
@@ -38,7 +38,7 @@ Inject the underlying raw CSS stylesheet securely into your application tree, an
 ```tsx
 // src/App.tsx
 import { ThemeProvider } from "styled-components"
-import { createStyledComponentsTheme } from "grammar-style/adapters"
+import createStyledComponentsTheme from "grammar-style/styled-components"
 
 const grammar = createStyledComponentsTheme()
 
@@ -60,7 +60,7 @@ Similar to Styled Components, the Emotion adapter safely constructs a `<Global /
 ```tsx
 // src/App.tsx
 import { ThemeProvider } from "@emotion/react"
-import { createEmotionTheme } from "grammar-style/adapters"
+import createEmotionTheme from "grammar-style/emotion"
 
 const grammar = createEmotionTheme()
 
@@ -80,7 +80,7 @@ Extract your entire dictionary shape natively as a raw static JS map! You can se
 
 ```typescript
 // src/styles/theme.css.ts
-import { createVanillaExtractTheme } from "grammar-style/adapters"
+import createVanillaExtractTheme from "grammar-style/vanilla-extract"
 
 const grammar = createVanillaExtractTheme()
 
@@ -95,7 +95,7 @@ Map your semantics effortlessly into StyleX using the exported primitives block.
 ```typescript
 // src/styles/theme.stylex.ts
 import * as stylex from "@stylexjs/stylex"
-import { createStylexTheme } from "grammar-style/adapters"
+import createStylexTheme from "grammar-style/stylex"
 
 const grammar = createStylexTheme()
 
@@ -110,7 +110,7 @@ Consume natively transformed objects safely into Panda's strict static definitio
 ```typescript
 // panda.config.ts
 import { defineConfig } from "@pandacss/dev"
-import { createPandaTheme } from "grammar-style/adapters"
+import createPandaTheme from "grammar-style/panda"
 
 const grammar = createPandaTheme()
 
@@ -132,7 +132,7 @@ Since Linaria perfectly parses pure standard CSS inside template tags at build-t
 ```typescript
 // src/styles/global.ts
 import { css } from "@linaria/core"
-import { createLinariaTheme } from "grammar-style/adapters"
+import createLinariaTheme from "grammar-style/linaria"
 
 const grammar = createLinariaTheme()
 
