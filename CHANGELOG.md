@@ -1,5 +1,11 @@
 # grammar-style
 
+## 0.3.4
+
+### Patch Changes
+
+- feat: Introduce CLI for generating global context and enable explicit config passing in adapters.
+
 ## 0.3.2
 
 ### Patch Changes
