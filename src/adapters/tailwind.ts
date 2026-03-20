@@ -41,7 +41,7 @@ const createTailwindTheme = <
   Object.keys(media).forEach(k => {
     // Media values look like `@media (max-width: calc(40rem - 1px))` or `@media (min-width: 40rem)`
     // Tailwind just needs the inner value: `{ max: 'calc(40rem - 1px)' }` or `'40rem'`
-    const query = media[k] as string;
+    const query = media[k as keyof typeof media] as string;
     const match = query.match(/\((min-width|max-width):\s*(.*?)\)/);
     /* v8 ignore next 8 */
     if (match) {

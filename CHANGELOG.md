@@ -1,5 +1,11 @@
 # grammar-style
 
+## 0.3.8
+
+### Patch Changes
+
+- Fixed a compilation build error in the Tailwind adapter when generating Typescript definitions caused by strict breakpoint typing without an index cast (`TS7053`).
+
 ## 0.3.7
 
 ### Patch Changes
