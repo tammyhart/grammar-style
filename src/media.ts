@@ -14,6 +14,7 @@ const isBrowser = typeof window !== "undefined" && typeof window.document !== "u
 const media: Record<Breakpoints, string> = new Proxy({} as Record<Breakpoints, string>, {
   get(target, prop) {
     if (typeof prop === "symbol") return Reflect.get(target, prop)
+    if (prop === "then" || prop === "__esModule") return undefined
 
     if (!memoizedMedia) {
       if (isBrowser) {
@@ -63,6 +64,7 @@ const media: Record<Breakpoints, string> = new Proxy({} as Record<Breakpoints, s
 export const breakpoint: Record<Breakpoints, string> = new Proxy({} as Record<Breakpoints, string>, {
   get(target, prop) {
     if (typeof prop === "symbol") return Reflect.get(target, prop)
+    if (prop === "then" || prop === "__esModule") return undefined
 
     if (!memoizedBreakpoint) {
       if (!memoizedMedia) {

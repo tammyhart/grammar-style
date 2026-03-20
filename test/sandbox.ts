@@ -2,7 +2,7 @@ import { createTheme, loadConfig, token } from "../src"
 
 // Create an async runner to simulate reading the config
 async function run() {
-  const config = await loadConfig(__dirname + "/../")
+  const config = await loadConfig(__dirname)
 
   if (!config) {
     throw new Error("Could not find grammar.config.ts")
