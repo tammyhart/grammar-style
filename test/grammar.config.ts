@@ -103,14 +103,14 @@ export default defineGrammar({
 
   // 4. Optional responsive overrides
   responsive: {
-    lap: {
+    palmMax: {
       spacing: {
-        base: "size.32",
-        half: "size.16",
-        double: "size.64",
+        base: "size.16",
+        half: "size.8",
+        double: "size.32",
       },
     },
-    desk: {
+    lap: {
       spacing: {
         base: "size.40",
         half: "size.20",

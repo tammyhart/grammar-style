@@ -2,43 +2,6 @@
   "name": "grammar-style",
   "version": "0.2.1",
   "description": "A zero-runtime token resolution engine for design systems.",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
-    },
-    "./adapters/*": {
-      "types": "./dist/adapters/*.d.ts",
-      "import": "./dist/adapters/*.mjs",
-      "require": "./dist/adapters/*.js"
-    }
-  },
-  "files": [
-    "dist",
-    "bin"
-  ],
-  "bin": {
-    "grammar-init": "bin/init.mjs"
-  },
-  "directories": {
-    "test": "test"
-  },
-  "scripts": {
-    "prepublishOnly": "npm run build",
-    "build": "tsup",
-    "test": "vitest run && npm run test:types",
-    "test:types": "tsc --noEmit --strict src/types.test-d.ts",
-    "sandbox": "npx jiti test/sandbox.ts",
-    "coverage": "vitest run --coverage --coverage.reporter=text"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/grammar-style/grammar-style.git"
-  },
   "keywords": [
     "design-tokens",
     "css-in-js",
@@ -51,16 +14,73 @@
     "panda",
     "vanilla-extract"
   ],
-  "author": "Grammar Style",
-  "license": "ISC",
-  "type": "commonjs",
+  "homepage": "https://github.com/grammar-style/grammar-style#readme",
   "bugs": {
     "url": "https://github.com/grammar-style/grammar-style/issues"
   },
-  "homepage": "https://github.com/grammar-style/grammar-style#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grammar-style/grammar-style.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Grammar Style",
+    "url": "https://github.com/grammar-style"
+  },
+  "sideEffects": false,
+  "type": "commonjs",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./adapters/*": {
+      "types": "./dist/adapters/*.d.ts",
+      "import": "./dist/adapters/*.mjs",
+      "require": "./dist/adapters/*.js"
+    }
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "grammar-init": "bin/init.mjs"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "files": [
+    "dist",
+    "bin"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "coverage": "vitest run --coverage --coverage.reporter=text",
+    "prepublishOnly": "npm run build",
+    "sandbox": "npx jiti test/sandbox.ts",
+    "test": "vitest run && npm run test:types",
+    "test:types": "tsc --noEmit --strict src/types.test-d.ts"
+  },
   "dependencies": {
     "jiti": "^2.6.1",
     "undici-types": "^7.18.2"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.30.0",
+    "@emotion/react": "^11.14.0",
+    "@linaria/core": "^7.0.0",
+    "@types/node": "^25.5.0",
+    "@types/react": "^19.2.14",
+    "@types/styled-components": "^5.1.36",
+    "@vitest/coverage-v8": "^4.1.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "styled-components": "^6.3.12",
+    "tslib": "^2.8.1",
+    "tsup": "^8.5.1",
+    "typescript": "^5.5.0",
+    "vitest": "^4.1.0"
   },
   "peerDependencies": {
     "@emotion/react": ">=11.0.0",
@@ -78,20 +98,7 @@
       "optional": true
     }
   },
-  "devDependencies": {
-    "@changesets/cli": "^2.30.0",
-    "@emotion/react": "^11.14.0",
-    "@linaria/core": "^7.0.0",
-    "@types/node": "^25.5.0",
-    "@types/react": "^19.2.14",
-    "@types/styled-components": "^5.1.36",
-    "@vitest/coverage-v8": "^4.1.0",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "styled-components": "^6.3.12",
-    "tslib": "^2.8.1",
-    "tsup": "^8.5.1",
-    "typescript": "^5.5.0",
-    "vitest": "^4.1.0"
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
