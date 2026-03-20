@@ -127,7 +127,7 @@ export type ValidToken<S extends string, P, IsPrimitive extends boolean = false,
   : S extends `${string}.${string}` ? (
       S extends `${"0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"}${string}` ? true : `Error: invalid token: '${S}'${DidYouMeanSuffix<S, P, IsPrimitive, Ops>}`
     )
-  : IsPrimitive extends false ? (HasColorValue<S> extends true ? `Error: literal colors are not allowed outside primitives: '${S}'` : `Error: invalid token: '${S}'${DidYouMeanSuffix<S, P, IsPrimitive, Ops>}`)
+  : IsPrimitive extends false ? (HasColorValue<S> extends true ? `Error: literal colors are not allowed outside primitives: '${S}'` : true)
   : true
 
 export type ValidateString<S extends string, P, IsPrimitive extends boolean = false, Ops extends string | number = ValidOpacityName> = string extends S ? S

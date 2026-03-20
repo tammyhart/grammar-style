@@ -131,13 +131,17 @@ defineGrammar({
 })
 
 // ----------------------------------------------------------------------------
-// RULE: invalid token
+// RULE: Non-token string validation
 // ----------------------------------------------------------------------------
 defineGrammar({
   semantics: {
     foo: {
-      // @ts-expect-error - random string is invalid token
+      // Allowed: random generic CSS strings or words that don't look like token paths
       value: "random_string",
+    },
+    bar: {
+      // Allowed: transition tokens
+      value: "0.2s ease",
     },
   },
 })
