@@ -28,6 +28,7 @@
     "test": "test"
   },
   "scripts": {
+    "prepublishOnly": "npm run build",
     "build": "tsup",
     "test": "vitest run && npm run test:types",
     "test:types": "tsc --noEmit --strict src/types.test-d.ts",
@@ -77,6 +78,7 @@
     }
   },
   "devDependencies": {
+    "@changesets/cli": "^2.30.0",
     "@emotion/react": "^11.14.0",
     "@linaria/core": "^7.0.0",
     "@types/node": "^25.5.0",
