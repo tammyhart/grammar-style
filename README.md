@@ -7,7 +7,7 @@
   <p style="font-size: 1.25rem; opacity:0.75;">The TypeScript engine for design system architects who prioritize enforcement over flexibility.</p>
   <p>
     <img src="https://img.shields.io/npm/v/grammar-style" alt="NPM Version" />
-    <img src="https://img.shields.io/npm/l/grammar-style" alt="License" />
+    <img src="https://img.shields.io/npm/l/grammar-style?color=blue" alt="License" />
     <img src="https://img.shields.io/badge/TypeScript-Strict-blue" alt="TypeScript Strict" />
     <img src="https://img.shields.io/badge/Coverage-100%25-brightgreen" alt="Coverage" />
   </p>
