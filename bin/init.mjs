@@ -19,28 +19,25 @@ async function run() {
   }
 
   // The template content
-  const template = `import { defineGrammar, defaultBreakpoints } from "grammar-style"
+  const template = `import { defineGrammar } from "grammar-style"
 
-// Or use a function to map your semantics directly from the inferred primitive types:
 const config = defineGrammar({
-  options: {
-    breakpoints: defaultBreakpoints,
-  },
-
   // 1. Define your raw primitive values (e.g., color palettes, base sizing)
   primitives: {
-    stone: { 100: "#1A1A1A", 50: "#808080", 10: "#E6E6E6" },
+    color: {
+      stone: { 100: "#1A1A1A", 50: "#808080", 10: "#E6E6E6" },
+    },
   },
 
   // 2. Map primitives to semantic names that you will use in your components
-  semantics: (p) => ({
+  semantics: {
     color: {
       primary: {
-        base: p.stone[100],
+        base: "color.stone.100",
       },
-      background: p.stone[10],
+      background: "color.stone.10",
     },
-  }),
+  },
 })
 
 // 🚀 Give grammar-style its autocomplete super-powers!
