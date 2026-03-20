@@ -1,5 +1,11 @@
 # grammar-style
 
+## 0.3.2
+
+### Patch Changes
+
+- Relax the strict token type-checks for semantic values. By permitting valid, non-dot CSS strings (like \`"ease"\`, \`"solid"\`, or numbers), users can cleanly write composite properties like \`transition: "0.2s ease"\` or \`border: "size.1 solid color.syntax.500"\` without triggering invalid token errors, while still enforcing token restrictions on raw color literals.
+
 ## 0.3.1
 
 ### Patch Changes
