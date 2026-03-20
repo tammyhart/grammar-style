@@ -1,6 +1,6 @@
 {
   "name": "grammar-style",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "A zero-runtime token resolution engine for design systems.",
   "keywords": [
     "design-tokens",
@@ -35,15 +35,40 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
-    "./adapters": {
-      "types": "./dist/adapters/index.d.ts",
-      "import": "./dist/adapters/index.mjs",
-      "require": "./dist/adapters/index.js"
+    "./emotion": {
+      "types": "./dist/adapters/emotion.d.ts",
+      "import": "./dist/adapters/emotion.mjs",
+      "require": "./dist/adapters/emotion.js"
     },
-    "./adapters/*": {
-      "types": "./dist/adapters/*.d.ts",
-      "import": "./dist/adapters/*.mjs",
-      "require": "./dist/adapters/*.js"
+    "./linaria": {
+      "types": "./dist/adapters/linaria.d.ts",
+      "import": "./dist/adapters/linaria.mjs",
+      "require": "./dist/adapters/linaria.js"
+    },
+    "./panda": {
+      "types": "./dist/adapters/panda.d.ts",
+      "import": "./dist/adapters/panda.mjs",
+      "require": "./dist/adapters/panda.js"
+    },
+    "./styled-components": {
+      "types": "./dist/adapters/styled-components.d.ts",
+      "import": "./dist/adapters/styled-components.mjs",
+      "require": "./dist/adapters/styled-components.js"
+    },
+    "./stylex": {
+      "types": "./dist/adapters/stylex.d.ts",
+      "import": "./dist/adapters/stylex.mjs",
+      "require": "./dist/adapters/stylex.js"
+    },
+    "./tailwind": {
+      "types": "./dist/adapters/tailwind.d.ts",
+      "import": "./dist/adapters/tailwind.mjs",
+      "require": "./dist/adapters/tailwind.js"
+    },
+    "./vanilla-extract": {
+      "types": "./dist/adapters/vanilla-extract.d.ts",
+      "import": "./dist/adapters/vanilla-extract.mjs",
+      "require": "./dist/adapters/vanilla-extract.js"
     }
   },
   "main": "dist/index.js",

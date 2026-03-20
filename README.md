@@ -406,7 +406,7 @@ Drop `grammar-style` natively into your `tailwind.config.ts` configuration to se
 
 ```typescript
 // tailwind.config.ts
-import { createTailwindTheme } from "grammar-style/adapters"
+import createTailwindTheme from "grammar-style/tailwind"
 
 // grammar-style automatically reads your local grammar.config.ts!
 const grammar = createTailwindTheme()
@@ -424,7 +424,7 @@ Consume natively transformed objects safely into Panda's strict static definitio
 ```typescript
 // panda.config.ts
 import { defineConfig } from "@pandacss/dev"
-import { createPandaTheme } from "grammar-style/adapters"
+import createPandaTheme from "grammar-style/panda"
 
 const grammar = createPandaTheme()
 
