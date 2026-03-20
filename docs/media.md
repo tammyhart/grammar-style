@@ -56,7 +56,10 @@ export const boxStyle = style({
 ### Component Boilerplate 
 Since `media` and `breakpoint` are Proxy singletons wired dynamically back to your `grammar.config.ts`, you never explicitly map `defineGrammar` context hooks locally in your individual `.tsx` files! They behave statically anywhere in your codebase flawlessly while strongly typing perfectly!
 
-### Build-Time Processing Only
-Because `media` and `breakpoint` dynamically traverse your filesystem architecture asynchronously via Node bindings to construct logic safely, they **cannot be executed inside client-side browsers**. 
+### Client-Side Execution
+By default, because `media` and `breakpoint` dynamically traverse your filesystem architecture asynchronously via Node bindings to construct logic safely, they **cannot be executed directly inside client-side browsers**. 
 
-If you are running dynamically generated runtime CSS-in-JS rendering engines directly in the browser (e.g., standard Client-Side React + runtime Styled Components) without a Node compilation pipeline, these utilities will intentionally throw an error structurally. Use them exclusively with native build-time logic (Linaria, Vanilla Extract, StyleX, Next.js Server Components, Tailwind, Panda).
+If you are running dynamically generated runtime CSS-in-JS engines in the client (e.g., standard React + runtime Styled Components) without a Node validation pipeline, these utilities will intentionally throw an error structurally. 
+
+**Wait, what if I need them in the Browser?**
+No problem! If your architecture needs to read media queries inside a browser context, run `npx grammar-style generate`. This natively evaluates and caches the proxies into a pure static lookup map during your build step (`generated.ts`), seamlessly unlocking standard usage everywhere without any Node.js dependencies!

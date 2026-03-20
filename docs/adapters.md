@@ -12,6 +12,11 @@ import config from "../../grammar.config.ts"
 const grammar = createLinariaTheme(config)
 ```
 
+## 📐 Structural Constraints
+Because `grammar-style` strictly enforces scalable mathematical CSS natively, all adapters instantly inherit two aggressive architectural rules:
+1. **No `px` Strings Allowed:** Emitting `12px` inside any adapter's context crashes compilation instantly. You must use `rem` or `em`.
+2. **`size` Grid Immutability:** The built-in layout sizes `size.4`, `size.16`, etc., map natively mathematically inline. You are entirely restricted from passing custom `primitives.size` objects into any adapter!
+
 ---
 
 ## 1. Tailwind CSS
@@ -127,7 +132,7 @@ export default defineConfig({
 
 ## 7. Linaria
 
-Since Linaria perfectly parses pure standard CSS inside template tags at build-time, you only need to mount the raw generated AST into a global scope block to enable all nested styling dependencies!
+Since Linaria perfectly parses pure standard CSS inside template tags at build-time, you only need to mount the raw generated CSS tree into a global scope block to enable all nested styling dependencies!
 
 ```typescript
 // src/styles/global.ts

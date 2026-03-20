@@ -105,7 +105,7 @@ The `size` primitive is special. It acts as a pre-populated grid scale built per
 
 ### The `px` to `rem` Bridge
 
-You access tokens using developer-friendly pixel numbers (e.g. `size.16`), but the _compiled output_ strictly emits natively responsive rems (`var(--size-16)` → `1rem`). This gives you the mental clarity of working with absolute layouts without sacrificing the fluid scalability and accessibility of generic `rem` units.
+You access tokens using developer-friendly pixel numbers (e.g. `size.16`), but the _compiled output_ strictly emits natively responsive rems (`1rem`). This gives you the mental clarity of working with absolute layouts without sacrificing the fluid scalability and accessibility of generic `rem` units.
 
 ### Allowed Constraints
 
@@ -115,11 +115,11 @@ Grid sizes map tightly. Small sizes allowed are: `1, 2, 4, 6, 8, 10, 12, 16`. Be
 
 `grammar-style` uniquely supports dynamic negative polarity without duplicating tokens.
 
-`-size.16` = `calc(var(--size-16) * -1)` = `calc(1rem * -1)` = `-1rem`
+`-size.16` natively compiles directly to literal math without CSS variables: `-1rem`
 
 ### Zero-Bloat CSS
 
-Because injecting 700+ size variables into global CSS hurts performance, `grammar-style` runs a lightning-fast static AST file scanner. It explicitly tree-shakes your Next.js/React filesystem and _only_ outputs CSS variables into `:root` for the exact sizes actively used in your codebase. This CSS tree correctly mounts via your adapter framework natively!
+Instead of injecting 700+ size variables into global CSS which balloons performance, or relying on complex background file scanners, `grammar-style` inherently bypasses the CSS Variable map completely for dimension primitives. It perfectly evaluates your target layout integers directly into strict literal math inline natively (`token("size.16")` evaluates instantly to strictly `"1rem"`). Your `:root` CSS stays completely empty of size primitives, ensuring lightning-fast static performance.
 
 <a href="#top">⬆️ Back to Top</a>
 
@@ -129,7 +129,6 @@ The `options` block lets you overwrite the core rules of your token validation.
 
 | Option        | Default Value                                                                                        | Description                                                                                                                                                                                                                                                                                                  |
 | :------------ | :--------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `content`     | `"./src"`<br>`"./app"`<br>`"./pages"`<br>`"./components"`<br>`"./lib"`                               | Tells the static AST scanner exactly which directories it should dynamically analyze to pick up and pre-calculate tokens.                                                                                                                                                                                    |
 | `opacities`   | `[10, 20, 40, 60, 80, 100]`                                                                          | Restricts allowed transparency fractions. Supply an array of mapping numerals (e.g. `[10, 50]`) to redefine opacity strings natively (`/10`, `/50`) across your semantic object bindings.                                                                                                                    |
 | `breakpoints` | `sm: "size.640"`<br>`md: "size.768"`<br>`lg: "size.1024"`<br>`xl: "size.1280"`<br>`xxl: "size.1536"` | Standard responsive layout endpoints. Implicitly generates **Max** variants for every key natively (e.g. `lgMax` safely maps to scaling `rem` math emitting `max-width: calc(64rem - 1px)` to avoid cross-breakpoint layout collisions natively). Map exclusively to custom `size.*` primitives to override. |
 | `modes`       | `["dark", "light"]`                                                                                  | Strings enforcing structurally validated root wrapper themes mapping safely toward conditional CSS elements natively like `[data-theme="dark"]`.                                                                                                                                                             |
@@ -139,8 +138,6 @@ import { defineGrammar } from "grammar-style"
 
 export const config = defineGrammar({
   options: {
-    // Configures the AST tracker globally
-    content: ["./src/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}"],
     // Customizes the opacity scale to allow /5 and /50 fractions
     opacities: [5, 10, 20, 40, 50, 60, 80, 100],
     // Allows deep validation for explicit alternative root subsets
@@ -167,6 +164,8 @@ However, if your configuration injects _custom keys_ completely ignoring the nat
 ## 🧱 Primitives
 
 The foundation structural layer. Here you dictate your hardcoded absolute properties—like your hex swatches (`#ff0000`), spacing logic, or unconstrained radii layers. You map these as standard nested objects (e.g. `border: { radius: "size.24" }`).
+
+> **⚠️ Size is Geometrically Locked:** The built-in `size` primitive dictionary serves as a structural foundation explicitly designed to keep scaling aligned perfectly to UI layout box models. Passing `{ size: { ... } }` internally inside your `primitives` overrides will strictly trip an architectural compiler lock forcing a local build crash.
 
 ```typescript
 export const config = defineGrammar({
@@ -303,10 +302,10 @@ const Box = styled.div`
   /* Emits: var(--color-surface-50) */
   color: ${token("color.surface/50")};
 
-  /* Emits: calc(var(--size-400) * 2) */
+  /* Emits: calc(25rem * 2) */
   margin: ${token("calc(size.400 * 2)")};
 
-  /* Emits: calc(var(--size-400) * -1) */
+  /* Emits: -25rem */
   bottom: ${token("-size.400")};
 `
 ```
@@ -348,7 +347,7 @@ For CSS-in-JS libraries that use object syntax and expect raw condition strings 
 import { media, token } from "grammar-style"
 
 export const Footer = styled.footer`
-  /* Emits correctly formatted AST `@media` tag! */
+  /* Emits correctly formatted native `@media` block! */
   ${media.lg} {
     padding: ${token("size.16")};
   }

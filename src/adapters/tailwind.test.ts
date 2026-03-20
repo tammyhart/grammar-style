@@ -33,7 +33,7 @@ test("createTailwindTheme generates strict deeply-nested css variable maps itera
   
   // Confirms nested structures evaluate recursively tracking `p.color` recursively correctly
   expect((theme?.colors as any)?.stone["900"]).toBe("var(--color-stone-900)")
-  expect((theme?.spacing as any)?.["400"]).toBe("var(--size-400)")
+  expect((theme?.spacing as any)?.["base"]).toBe("var(--spacing-base)")
   expect((theme?.borderRadius as any)?.round).toBe("var(--radius-round)")
   expect((theme?.boxShadow as any)?.soft).toBe("var(--shadow-soft)")
 })

@@ -64,7 +64,7 @@ const createTailwindTheme = <
         },
         spacing: {
           /* v8 ignore next */
-          ...(isObject(p.size) ? mapToTailwindVars(p.size as any, ["size"]) : {}),
+          ...(isObject(p.size) ? p.size : {}),
           ...(isObject(s.spacing) ? mapToTailwindVars(s.spacing as any, ["spacing"]) : {}),
         },
         borderRadius: {
