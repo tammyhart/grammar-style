@@ -1,5 +1,11 @@
 # grammar-style
 
+## 0.3.11
+
+### Patch Changes
+
+- Fixed an `ERR_MODULE_NOT_FOUND` boot regression in native Node.js ESM environments when attempting to trace the `grammar-style` index dynamically without the explicit external `./generated` override file extension.
+
 ## 0.3.10
 
 ### Patch Changes
