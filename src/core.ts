@@ -12,7 +12,8 @@ const createCssVars = (
   prefix: string[] = [],
   isReference = false,
   primitives?: Record<string, unknown>,
-  customOpacitiesOut?: Record<string, string>
+  customOpacitiesOut?: Record<string, string>,
+  semantics?: Record<string, unknown>
 ): string => {
   return Object.entries(obj).reduce((acc, [key, value]) => {
     const newPath = [...prefix, key]
@@ -32,69 +33,13 @@ const createCssVars = (
       finalValue = value.replace(
         TOKEN_REGEX,
         (match, isNegative, tokenTarget, hasOpacity, opacityValue) => {
-          const cssVar = `var(--${tokenTarget.replace(/\./g, "-")})`;
-          let result = cssVar;
+          let result = `var(--${tokenTarget.replace(/\./g, "-")})`;
           if (isNegative && hasOpacity) {
             throw new Error(`Grammr Style: Token cannot mathematically be both negative and have opacity. Found: -${tokenTarget}/${opacityValue}`);
           }
           if (hasOpacity) {
-            let rgbaResolved = false;
-            if (primitives && opacityValue) {
-              const parts = tokenTarget.split('.');
-              let current: any = primitives;
-              for (const part of parts) {
-                if (current && typeof current === 'object') current = current[part];
-                else { current = undefined; break; }
-              }
-              if (typeof current === 'string') {
-                const a = Number(opacityValue) / 100;
-                let convertedString: string | null = null;
-                
-                if (current.startsWith('#')) {
-                  let hex = current.substring(1);
-                  if (hex.length === 3 || hex.length === 4) hex = hex.split('').map(x => x + x).join('');
-                  if (hex.length === 6 || hex.length === 8) {
-                    const r = parseInt(hex.slice(0, 2), 16);
-                    const g = parseInt(hex.slice(2, 4), 16);
-                    const b = parseInt(hex.slice(4, 6), 16);
-                    let finalA = a;
-                    if (hex.length === 8) {
-                      finalA = a * (parseInt(hex.slice(6, 8), 16) / 255);
-                    }
-                    convertedString = `rgba(${r}, ${g}, ${b}, ${parseFloat(finalA.toFixed(4))})`;
-                  }
-                } else if (current.startsWith('hsl') || current.startsWith('rgb')) {
-                  const inner = current.match(/\((.*)\)/)?.[1];
-                  if (inner) {
-                    const parts = inner.split(/[\s,]+/).filter(Boolean);
-                    if (parts.length >= 3) {
-                       const p1 = parts[0];
-                       const p2 = parts[1];
-                       const p3 = parts[2];
-                       if (current.startsWith('hsl')) {
-                         convertedString = `hsla(${p1}, ${p2}, ${p3}, ${a})`;
-                       } else {
-                         convertedString = `rgba(${p1}, ${p2}, ${p3}, ${a})`;
-                       }
-                    }
-                  }
-                }
-
-                if (convertedString) {
-                  if (customOpacitiesOut) {
-                    const customVarName = `--${tokenTarget.replace(/\./g, "-")}-${opacityValue}`;
-                    customOpacitiesOut[customVarName] = convertedString;
-                    result = `var(${customVarName})`;
-                  } else {
-                    result = convertedString;
-                  }
-                  rgbaResolved = true;
-                }
-              }
-            }
-            if (!rgbaResolved) {
-              throw new Error(`Grammr Style: Unable to parse primitive '${tokenTarget}' for opacity transform. Supported formats are Hex, rgb(), rgba(), hsl(), hsla().`);
-            }
+            const a = Number(opacityValue) / 100;
+            result = `rgba(var(--${tokenTarget.replace(/\./g, "-")}-rgb), ${a})`;
           }
           if (isNegative) {
             if (customOpacitiesOut) {
@@ -111,8 +56,37 @@ const createCssVars = (
       );
     }
 
-    return acc + `${toCssVar(newPath)}: ${finalValue};\n`
+    let cssLine = `${toCssVar(newPath)}: ${finalValue};\n`;
+
+    if (typeof finalValue === "string" && newPath[0] === "color") {
+       let current = finalValue.trim();
+       if (current.startsWith("var(--")) {
+          const innerVar = current.match(/var\((--.*?)\)/)?.[1];
+          if (innerVar && innerVar.startsWith("--color-")) {
+             cssLine += `${toCssVar(newPath)}-rgb: var(${innerVar}-rgb);\n`;
+          }
+       } else if (current.startsWith("#")) {
+          let hex = current.substring(1);
+          if (hex.length === 3 || hex.length === 4) hex = hex.split('').map(x => x + x).join('');
+          if (hex.length === 6 || hex.length === 8) {
+            const r = parseInt(hex.slice(0, 2), 16);
+            const g = parseInt(hex.slice(2, 4), 16);
+            const b = parseInt(hex.slice(4, 6), 16);
+            cssLine += `${toCssVar(newPath)}-rgb: ${r}, ${g}, ${b};\n`;
+          }
+       }
+    }
+
+    return acc + cssLine;
   }, "")
+}
+
+let globalFs: any = undefined;
+let globalPath: any = undefined;
+
+export const injectFs = (loadedFs: any, loadedPath: any) => {
+  globalFs = loadedFs;
+  globalPath = loadedPath;
 }
 
 const getUsedTokens = (
@@ -135,27 +109,8 @@ const getUsedTokens = (
   scanObj(config.modes)
   scanObj(config.responsive)
 
-  let fs:
-    | {
-        existsSync: (path: string) => boolean
-        statSync: (path: string) => { isDirectory: () => boolean }
-        readdirSync: (path: string) => string[]
-        readFileSync: (path: string, options: string) => string
-      }
-    | undefined
-  let path:
-    | {
-        join: (...paths: string[]) => string
-        resolve: (...paths: string[]) => string
-      }
-    | undefined
-  try {
-    const f = "node" + ":" + "fs"
-    const p = "node" + ":" + "path"
-    fs = eval(`require('${f}')`)
-    path = eval(`require('${p}')`)
-  } catch (e) {}
-
+  let fs = globalFs;
+  let path = globalPath;
   if (fs && path && typeof process !== 'undefined' && process.cwd) {
     const cwd = process.cwd()
     const contentPaths = config.options?.content || [
@@ -289,7 +244,7 @@ export const createTheme = <
   Array.from(usedTokens).forEach(t => {
      let tempObj = { value: t };
      try {
-       createCssVars(tempObj as any, [], true, primitivesForCss as any, customOpacitiesOut);
+       createCssVars(tempObj as any, [], true, primitivesForCss as any, customOpacitiesOut, semantics as any);
      } catch(e) {}
      t.replace(tokenRegexScanner, (match, isNegative, tokenTarget) => {
         usedTokens.add(tokenTarget);
@@ -317,16 +272,16 @@ export const createTheme = <
 
   let rootCssText = ""
   if (Object.keys(primitivesForCss).length > 0) {
-    rootCssText += createCssVars(primitivesForCss, [], false, primitivesForCss, customOpacitiesOut)
+    rootCssText += createCssVars(primitivesForCss, [], false, primitivesForCss, customOpacitiesOut, semantics as any)
   }
 
-  rootCssText += createCssVars(semantics, [], true, primitivesForCss, customOpacitiesOut)
+  rootCssText += createCssVars(semantics, [], true, primitivesForCss, customOpacitiesOut, semantics as any)
 
   // Generate Mode Variables (e.g. [data-theme="dark"])
   let modesCssText = ""
   if (modes) {
     Object.entries(modes).forEach(([modeName, modeTokens]) => {
-      modesCssText += `\n[data-theme="${modeName}"] {\n${createCssVars(modeTokens as Record<string, unknown>, [], true, primitivesForCss, customOpacitiesOut)}}\n`
+      modesCssText += `\n[data-theme="${modeName}"] {\n${createCssVars(modeTokens as Record<string, unknown>, [], true, primitivesForCss, customOpacitiesOut, semantics as any)}}\n`
     })
   }
 
@@ -366,7 +321,8 @@ export const createTheme = <
           [],
           true,
           primitivesForCss,
-          customOpacitiesOut
+          customOpacitiesOut,
+          semantics as any
         )
           .split("\n")
           .map(l => (l ? `    ${l}` : ""))

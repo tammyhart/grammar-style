@@ -15,7 +15,11 @@ export const formatTokenToCssVar = (
   let formattedTarget = tokenTarget.replace(/\./g, "-")
 
   if (opacityValue) {
-    formattedTarget += `-${opacityValue}`
+    if (isNegative) {
+      throw new Error(`Grammr Style: Token cannot mathematically be both negative and have opacity. Found: -${tokenTarget}/${opacityValue}`)
+    }
+    const a = Number(opacityValue) / 100
+    return `rgba(var(--${formattedTarget}-rgb), ${a})`
   }
 
   if (isNegative) {

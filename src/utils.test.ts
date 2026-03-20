@@ -11,7 +11,7 @@ describe("formatTokenToCssVar", () => {
 
   it("formats tokens with opacity correctly", () => {
     expect(formatTokenToCssVar("", "color.primary.base", "50")).toBe(
-      "var(--color-primary-base-50)",
+      "rgba(var(--color-primary-base-rgb), 0.5)",
     )
   })
 

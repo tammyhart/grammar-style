@@ -3,10 +3,12 @@ import fs from "node:fs/promises"
 import path from "node:path"
 import { createRequire } from "node:module"
 import { fileURLToPath } from "node:url"
-import { loadConfig } from "../dist/index.mjs"
-import { createTheme } from "../dist/index.mjs"
+import { loadConfig, createTheme, injectFs } from "../dist/index.mjs"
+import fsSync from "node:fs"
 
 const require = createRequire(import.meta.url)
+
+injectFs(fsSync, path)
 
 async function run() {
   const args = process.argv.slice(2)

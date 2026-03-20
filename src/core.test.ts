@@ -65,9 +65,8 @@ describe("createTheme", () => {
   it("generates correct opacity wrappers using math equivalents", () => {
     const theme = createTheme(mockConfig)
     
-    expect(theme.cssText).toContain("--color-brand-50: rgba(255, 0, 0, 0.5);")
-    expect(theme.cssText).toContain("--foreground: var(--color-brand-50);")
-    expect(theme.cssText).toContain("--color-hslColor-10: hsla(0, 100%, 50%, 0.1);")
+    expect(theme.cssText).toContain("--foreground: rgba(var(--color-brand-rgb), 0.5);")
+    expect(theme.cssText).toContain("--nested-other: rgba(var(--color-hslColor-rgb), 0.1);")
   })
 
   it("handles negative resolution math via calc() wrappers", () => {
@@ -89,7 +88,7 @@ describe("createTheme", () => {
   it("generates nested mode overrides wrapped in [data-theme] selector", () => {
     const theme = createTheme(mockConfig)
     expect(theme.cssText).toContain("[data-theme=\"dark\"] {")
-    expect(theme.cssText).toContain("--background: var(--color-brand-10);")
+    expect(theme.cssText).toContain("--background: rgba(var(--color-brand-rgb), 0.1);")
   })
 
   it("generates responsive wrappers using correct CSS media breakpoints", () => {
@@ -129,23 +128,11 @@ describe("createTheme", () => {
       }
     }
     const theme = createTheme(arrConfig)
-    expect(theme.cssText).toContain("--color-shortHex-10: rgba(255, 0, 0, 0.1);")
-    expect(theme.cssText).toContain("--wrapper: var(--color-shortHex-10);")
+    expect(theme.cssText).toContain("--color-shortHex-rgb: 255, 0, 0;")
+    expect(theme.cssText).toContain("--wrapper: rgba(var(--color-shortHex-rgb), 0.1);")
   })
 
-  it("throws error for improper opacity resolutions", () => {
-    const arrConfig = {
-      primitives: {
-        color: {
-          bad: "unknownFunc(0,0,0)"
-        }
-      },
-      semantics: {
-        wrapper: "color.bad/10"
-      }
-    }
-    expect(() => createTheme(arrConfig)).toThrow("Unable to parse primitive 'color.bad' for opacity transform")
-  })
+
 
   it("throws error for opacity values out of bounds", () => {
     const arrConfig = { options: { opacities: [105] }, semantics: {} }
@@ -173,7 +160,8 @@ describe("createTheme", () => {
       semantics: { color: { bg: "color.hex8/50", border: "color.rgb/50" } }
     }
     const result = createTheme(config)
-    expect(result.cssText).toContain("rgba(255, 0, 0, 0.5)") // rgba parsing branch
+    expect(result.cssText).toContain("--color-hex8-rgb: 255, 0, 0;")
+    expect(result.cssText).toContain("--color-bg: rgba(var(--color-hex8-rgb), 0.5);")
   })
 
   it("verifies negative mathematical scaling cleanly without custom tracker", () => {

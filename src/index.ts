@@ -11,7 +11,7 @@ export function defineGrammar<
   return config as unknown as Readonly<C & ValidatedConfig<P, C>>;
 }
 
-export { createTheme } from "./core"
+export { createTheme, injectFs } from "./core"
 export { default as token } from "./token"
 export { default as media, breakpoint } from "./media"
 export { loadConfig } from "./config"
@@ -20,5 +20,5 @@ export { loadConfig } from "./config"
 export { defaultBreakpoints, defaultSizes, defaultModes, defaultOpacities } from "./defaults"
 
 // Expose helpful utility types for external typed setups
-export type { ThemeConfig, TokenPath, DeepPartial } from "./types"
+export type { ThemeConfig, TokenPath, DeepPartial, Register } from "./types"
 export type { ValidSizeStr, BreakpointName, ValidModeName, ValidOpacityName } from "./defaults"

@@ -27,7 +27,7 @@ describe("token", () => {
 
   it("handles paths with opacity", () => {
     // @ts-expect-error - testing the string transformation runtime mapping logic
-    expect(token("color.primary.base/50")).toBe("var(--color-primary-base-50)")
+    expect(token("color.primary.base/50")).toBe("rgba(var(--color-primary-base-rgb), 0.5)")
   })
 
   it("throws an error for negative paths with opacity", () => {
