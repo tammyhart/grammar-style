@@ -12,14 +12,13 @@ const createCssVars = (
   prefix: string[] = [],
   isReference = false,
   primitives?: Record<string, unknown>,
-  customOpacitiesOut?: Record<string, string>,
   semantics?: Record<string, unknown>
 ): string => {
   return Object.entries(obj).reduce((acc, [key, value]) => {
     const newPath = [...prefix, key]
 
     if (isObject(value)) {
-      return acc + createCssVars(value, newPath, isReference, primitives, customOpacitiesOut)
+      return acc + createCssVars(value, newPath, isReference, primitives, semantics)
     }
 
     if (typeof value === "string" && value.includes("px")) {
@@ -33,7 +32,18 @@ const createCssVars = (
       finalValue = value.replace(
         TOKEN_REGEX,
         (match, isNegative, tokenTarget, hasOpacity, opacityValue) => {
-          let result = `var(--${tokenTarget.replace(/\./g, "-")})`;
+          let result = `var(--${tokenTarget.replace(/\./g, "-")})`
+          if (tokenTarget.startsWith("size.")) {
+            const sizeKey = tokenTarget.split(".")[1] as keyof typeof defaultSizes
+            if (defaultSizes[sizeKey]) {
+              const rawValue = defaultSizes[sizeKey]
+              if (isNegative) {
+                 if (rawValue.endsWith("rem")) return `-${rawValue}`
+                 return `calc(${rawValue} * -1)`
+              }
+              return rawValue
+            }
+          }
           if (isNegative && hasOpacity) {
             throw new Error(`Grammr Style: Token cannot mathematically be both negative and have opacity. Found: -${tokenTarget}/${opacityValue}`);
           }
@@ -42,14 +52,7 @@ const createCssVars = (
             result = `rgba(var(--${tokenTarget.replace(/\./g, "-")}-rgb), ${a})`;
           }
           if (isNegative) {
-            if (customOpacitiesOut) {
-              const baseVarName = result.match(/var\(--(.*?)\)/)?.[1] || tokenTarget.replace(/\./g, "-");
-              const customVarName = `--${baseVarName}-negative`;
-              customOpacitiesOut[customVarName] = `calc(${result} * -1)`;
-              result = `var(${customVarName})`;
-            } else {
-              result = `calc(${result} * -1)`;
-            }
+             result = `calc(${result} * -1)`;
           }
           return result;
         }
@@ -81,104 +84,8 @@ const createCssVars = (
   }, "")
 }
 
-let globalFs: any = undefined;
-let globalPath: any = undefined;
 
-export const injectFs = (loadedFs: any, loadedPath: any) => {
-  globalFs = loadedFs;
-  globalPath = loadedPath;
-}
 
-const getUsedTokens = (
-  config: ThemeConfig<Record<string, unknown>, Record<string, unknown>>,
-): Set<string> => {
-  const used = new Set<string>()
-
-  const scanObj = (obj: unknown) => {
-    if (typeof obj === "string") {
-      const match = obj.match(new RegExp(TOKEN_REGEX.source, "g"))
-      if (match) match.forEach(m => used.add(m))
-    } else if (Array.isArray(obj)) {
-      obj.forEach(scanObj)
-    } else if (isObject(obj)) {
-      Object.values(obj).forEach(scanObj)
-    }
-  }
-
-  scanObj(config.semantics)
-  scanObj(config.modes)
-  scanObj(config.responsive)
-
-  let fs = globalFs;
-  let path = globalPath;
-  if (fs && path && typeof process !== 'undefined' && process.cwd) {
-    const cwd = process.cwd()
-    const contentPaths = config.options?.content || [
-      "./src",
-      "./app",
-      "./pages",
-      "./components",
-      "./lib",
-    ]
-
-    const getFiles = (dir: string): string[] => {
-      let results: string[] = []
-      try {
-        if (!fs.existsSync(dir)) return results
-        const stat = fs.statSync(dir)
-        if (!stat.isDirectory()) {
-          results.push(dir)
-          return results
-        }
-
-        const list = fs.readdirSync(dir)
-        list.forEach((file: string) => {
-          if (
-            file === "node_modules" ||
-            file.startsWith(".") ||
-            file.startsWith("dist") ||
-            file.startsWith("build")
-          )
-            return
-          const filePath = path.join(dir, file)
-          try {
-            const stat = fs.statSync(filePath)
-            if (stat && stat.isDirectory()) {
-              results = results.concat(getFiles(filePath))
-            } else if (file.match(/\.(tsx?|jsx?|mdx?|html?|vue|svelte)$/)) {
-              results.push(filePath)
-            }
-          } catch (e) {
-            console.warn("Grammar Style scanner dir reading: " + e)
-          }
-        })
-      } catch (e) {
-        console.warn("Grammar Style scanner file reading: " + e)
-      }
-      return results
-    }
-
-    const filesToScan: string[] = []
-    contentPaths.forEach((p: string) => {
-      filesToScan.push(...getFiles(path.resolve(cwd, p)))
-    })
-
-    const scannerRegex = new RegExp(TOKEN_REGEX.source, "g")
-    filesToScan.forEach(file => {
-      try {
-        const content = fs.readFileSync(file, "utf8")
-        const matches = content.match(scannerRegex)
-        if (matches) {
-          matches.forEach((m: string) => used.add(m))
-        }
-      } catch (e) {
-        console.warn("Grammar Style content reading: " + e)
-      }
-    })
-  }
-
-  return used
-}
 
 export const createTheme = <
   P extends Record<string, unknown>,
@@ -186,6 +93,10 @@ export const createTheme = <
 >(
   config: ThemeConfig<P, S>,
 ) => {
+  if (config.primitives && 'size' in config.primitives) {
+    throw new Error("Grammar Style: The 'size' primitive is a strict geometric constant and cannot be overridden. Please remove 'size' from your config.primitives.")
+  }
+
   const optionsBreakpoints = config.options?.breakpoints || {}
 
   const hasOnlyDefaultOverrides = Object.keys(optionsBreakpoints).every(
@@ -231,57 +142,24 @@ export const createTheme = <
   const modes = config.modes
   const responsive = config.responsive
 
-  const customOpacitiesOut: Record<string, string> = {}
-  
-  const usedTokens = getUsedTokens(
-    config as ThemeConfig<Record<string, unknown>, Record<string, unknown>>,
-  )
   const primitivesForCss = { ...primitives } as P & {
     size?: Record<string, string>
   }
-
-  const tokenRegexScanner = new RegExp(TOKEN_REGEX.source, "g");
-  Array.from(usedTokens).forEach(t => {
-     let tempObj = { value: t };
-     try {
-       createCssVars(tempObj as any, [], true, primitivesForCss as any, customOpacitiesOut, semantics as any);
-     } catch(e) {}
-     t.replace(tokenRegexScanner, (match, isNegative, tokenTarget) => {
-        usedTokens.add(tokenTarget);
-        if (isNegative) usedTokens.add(`-${tokenTarget}`);
-        return match;
-     });
-  });
-
-  if (primitivesForCss.size) {
-    const filteredSizes: Record<string, string> = {}
-    Object.entries(primitivesForCss.size).forEach(([key, value]) => {
-      const isPosUsed = usedTokens.has(`size.${key}`) || usedTokens.has(key)
-      const isNegUsed = usedTokens.has(`-size.${key}`)
-      
-      if (isPosUsed || isNegUsed) {
-        filteredSizes[key] = value as string
-      }
-      
-      if (isNegUsed) {
-        customOpacitiesOut[`--size-${key}-negative`] = `calc(var(--size-${key}) * -1)`
-      }
-    })
-    primitivesForCss.size = filteredSizes
-  }
+  
+  delete primitivesForCss.size
 
   let rootCssText = ""
   if (Object.keys(primitivesForCss).length > 0) {
-    rootCssText += createCssVars(primitivesForCss, [], false, primitivesForCss, customOpacitiesOut, semantics as any)
+    rootCssText += createCssVars(primitivesForCss, [], false, primitivesForCss, semantics as any)
   }
 
-  rootCssText += createCssVars(semantics, [], true, primitivesForCss, customOpacitiesOut, semantics as any)
+  rootCssText += createCssVars(semantics, [], true, primitivesForCss, semantics as any)
 
   // Generate Mode Variables (e.g. [data-theme="dark"])
   let modesCssText = ""
   if (modes) {
     Object.entries(modes).forEach(([modeName, modeTokens]) => {
-      modesCssText += `\n[data-theme="${modeName}"] {\n${createCssVars(modeTokens as Record<string, unknown>, [], true, primitivesForCss, customOpacitiesOut, semantics as any)}}\n`
+      modesCssText += `\n[data-theme="${modeName}"] {\n${createCssVars(modeTokens as Record<string, unknown>, [], true, primitivesForCss, semantics as any)}}\n`
     })
   }
 
@@ -321,7 +199,6 @@ export const createTheme = <
           [],
           true,
           primitivesForCss,
-          customOpacitiesOut,
           semantics as any
         )
           .split("\n")
@@ -337,9 +214,6 @@ export const createTheme = <
 
   // Assemble Final Text
   let cssText = `:root {\n`
-  Object.entries(customOpacitiesOut).forEach(([varName, val]) => {
-    cssText += `${varName}: ${val};\n`
-  })
   cssText += rootCssText
   cssText += `}\n`
   cssText += modesCssText

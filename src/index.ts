@@ -11,7 +11,7 @@ export function defineGrammar<
   return config as unknown as Readonly<C & ValidatedConfig<P, C>>;
 }
 
-export { createTheme, injectFs } from "./core"
+export { createTheme } from "./core"
 export { default as token } from "./token"
 export { default as media, breakpoint } from "./media"
 export { loadConfig } from "./config"

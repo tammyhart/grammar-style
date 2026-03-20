@@ -4,7 +4,6 @@ import createTailwindTheme from "./tailwind"
 const mockConfig = vi.fn(() => ({
   primitives: {
     color: { stone: { 900: "#1A1A1A" }, brand: "#ff0000" },
-    size: { "400": "1rem" },
     radius: { "round": "50%" },
     shadow: { "soft": "0 0.25rem 0.625rem rgba(0,0,0,0.1)" }
   },

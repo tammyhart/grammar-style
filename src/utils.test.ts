@@ -6,7 +6,7 @@ describe("formatTokenToCssVar", () => {
     expect(formatTokenToCssVar("", "color.primary.base")).toBe(
       "var(--color-primary-base)",
     )
-    expect(formatTokenToCssVar("", "size.400")).toBe("var(--size-400)")
+    expect(formatTokenToCssVar("", "size.400")).toBe("25rem")
   })
 
   it("formats tokens with opacity correctly", () => {
@@ -17,10 +17,10 @@ describe("formatTokenToCssVar", () => {
 
   it("formats negative tokens correctly", () => {
     expect(formatTokenToCssVar("-", "size.400")).toBe(
-      "var(--size-400-negative)",
+      "-25rem",
     )
     expect(formatTokenToCssVar("-", "spacing.md")).toBe(
-      "var(--spacing-md-negative)",
+      "calc(var(--spacing-md) * -1)",
     )
   })
 

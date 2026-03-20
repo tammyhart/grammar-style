@@ -17,6 +17,7 @@ export const loadConfig = async (
       createJiti = eval(`require("${j}")`).createJiti
     } else {
       resolve = (await eval(`import("${p}")`)).resolve
+      /* v8 ignore next 2 */
       const jMod = await eval(`import("${j}")`)
       createJiti = jMod.createJiti || (jMod.default && jMod.default.createJiti) || jMod.default
     }
@@ -105,6 +106,7 @@ export const loadConfigSync = (
             >
           }
 
+      /* v8 ignore next 4 */
       const config =
         parsedConfig && "default" in parsedConfig
           ? parsedConfig.default

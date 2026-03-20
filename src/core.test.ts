@@ -5,7 +5,7 @@ describe("createTheme", () => {
   const mockConfig = {
     options: {
       breakpoints: {
-        desktop: "size.1000",
+        desktop: "size.400",
         mobile: "20rem"
       },
       opacities: [10, 50],
@@ -15,10 +15,6 @@ describe("createTheme", () => {
         brand: "#ff0000",
         rgbColor: "rgb(255, 0, 0)",
         hslColor: "hsl(0, 100%, 50%)",
-      },
-      size: { 
-        "1000": "62.5rem",
-        "1": "0.0625rem"
       }
     },
     semantics: {
@@ -28,7 +24,7 @@ describe("createTheme", () => {
         color: "color.rgbColor",
         other: "color.hslColor/10"
       },
-      negative: "-size.1000" 
+      negative: "-size.400" 
     },
     modes: {
       dark: {
@@ -72,8 +68,12 @@ describe("createTheme", () => {
   it("handles negative resolution math via calc() wrappers", () => {
     const theme = createTheme(mockConfig)
     
-    expect(theme.cssText).toContain("--negative: var(--size-1000-negative)")
-    expect(theme.cssText).toContain("--size-1000-negative: calc(var(--size-1000) * -1)")
+    expect(theme.cssText).toContain("--negative: -25rem;")
+  })
+
+  it("throws error if size is included in primitives", () => {
+    const badConfig = { primitives: { size: { "16": "1rem" } }, semantics: {} }
+    expect(() => createTheme(badConfig as any)).toThrow("strict geometric constant")
   })
 
   it("throws error when trying to use px values", () => {
@@ -94,11 +94,11 @@ describe("createTheme", () => {
   it("generates responsive wrappers using correct CSS media breakpoints", () => {
     const theme = createTheme(mockConfig)
 
-    // desktop = size.1000 -> properly maps to 62.5rem math
-    expect(theme.cssText).toContain("@media (min-width: 62.5rem) {")
+    // desktop = size.400 -> properly maps to 25rem math
+    expect(theme.cssText).toContain("@media (min-width: 25rem) {")
     
-    // desktopMax = size.1000 - size.1 -> calc(62.5rem - 1px)
-    expect(theme.cssText).toContain("@media (max-width: calc(62.5rem - 1px)) {")
+    // desktopMax = size.400 - size.1 -> calc(25rem - 1px)
+    expect(theme.cssText).toContain("@media (max-width: calc(25rem - 1px)) {")
 
     // mobileMax = calc(20rem - 1px)
     expect(theme.cssText).toContain("@media (max-width: calc(20rem - 1px)) {")
@@ -108,8 +108,8 @@ describe("createTheme", () => {
     const theme = createTheme(mockConfig as any)
 
     const media = theme.media as Record<string, string>
-    expect(media.desktop).toBe("@media (min-width: 62.5rem)")
-    expect(media.desktopMax).toBe("@media (max-width: calc(62.5rem - 1px))")
+    expect(media.desktop).toBe("@media (min-width: 25rem)")
+    expect(media.desktopMax).toBe("@media (max-width: calc(25rem - 1px))")
     expect(media.mobile).toBe("@media (min-width: 20rem)")
     expect(media.mobileMax).toBe("@media (max-width: calc(20rem - 1px))")
   })
@@ -169,8 +169,8 @@ describe("createTheme", () => {
     // We execute formatTokenToCssVar via core with primitives null or customTracker null
     // But since createTheme uses a tracker, we can test array branch parsing manually
     const config = {
-      primitives: { size: { "16": "1rem" } },
-      semantics: { spacing: { list: ["-size.16", "size.16/50"] } } // Hit branch 128 (Array mapping)
+      primitives: {},
+      semantics: { spacing: { list: ["-size.16", "size.16"] } } // Hit branch array mapping
     }
     expect(createTheme(config as any).primitives).toBeDefined()
   })
@@ -201,20 +201,15 @@ describe("createTheme", () => {
     const config = {
       options: {
         breakpoints: {
-          customGrid: "size.900"
-        }
-      },
-      primitives: {
-        size: {
-          "900": "90rem"
+          customGrid: "size.96"
         }
       },
       semantics: {}
     }
     const theme = createTheme(config)
     const media = theme.media as Record<string, string>
-    expect(media.customGrid).toBe("@media (min-width: 90rem)")
-    expect(media.customGridMax).toBe("@media (max-width: calc(90rem - 1px))")
+    expect(media.customGrid).toBe("@media (min-width: 6rem)")
+    expect(media.customGridMax).toBe("@media (max-width: calc(6rem - 1px))")
     expect(media.sm).toBeUndefined() // Wiped 
   })
 })

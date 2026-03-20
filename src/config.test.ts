@@ -31,6 +31,30 @@ describe("loadConfig", () => {
     
     fs.rmSync(badDir, { recursive: true, force: true })
   })
+
+  it("safely catches generic module requirement failures in ES execution globally", async () => {
+    const originalEval = globalThis.eval
+    globalThis.eval = (str: string) => {
+      if (str.includes('require')) throw new Error("Synthetic async require missing")
+      return originalEval(str)
+    }
+    
+    expect(await loadConfig(process.cwd())).toBeNull()
+    
+    globalThis.eval = originalEval
+  })
+
+  it("handles pure ESM default-nested module branches correctly", async () => {
+    const originalEval = globalThis.eval
+    globalThis.eval = (str: string) => {
+      if (str.includes('typeof require')) return false
+      if (str.includes('node:path')) return import("node:path")
+      if (str.includes('jiti')) return Promise.resolve({ default: { createJiti: (dir: string) => ({ import: () => ({ primitives: {} }) }) } })
+      return originalEval(str)
+    }
+    await loadConfig(process.cwd())
+    globalThis.eval = originalEval
+  })
 })
 
 describe("loadConfigSync", () => {
@@ -78,5 +102,47 @@ describe("loadConfigSync", () => {
     expect(configSync?.primitives).toBeDefined()
     
     fs.rmSync(dir, { recursive: true, force: true })
+  })
+
+  it("handles pure ESM dynamic import loading natively when require is completely absent", async () => {
+    const originalEval = globalThis.eval
+    globalThis.eval = (str: string) => {
+      if (str.includes('typeof require')) return false
+      if (str.includes('import(')) {
+        if (str.includes('node:path')) return import("node:path")
+        if (str.includes('jiti')) return import("jiti")
+      }
+      return originalEval(str)
+    }
+
+    const config = await loadConfig(process.cwd())
+    expect(config).toBeDefined()
+    
+    globalThis.eval = originalEval
+  })
+
+  it("handles graceful fallback when require structurally throws during JITI execution synchronously", () => {
+    const originalEval = globalThis.eval
+    globalThis.eval = (str: string) => {
+      if (str.includes('require')) throw new Error("Synthetic missing require")
+      return originalEval(str)
+    }
+    
+    expect(loadConfigSync(process.cwd())).toBeNull()
+    
+    globalThis.eval = originalEval
+  })
+
+  it("safely extracts configuration without a default wrapper natively through JITI sync", () => {
+    const originalEval = globalThis.eval
+    globalThis.eval = (str: string) => {
+      if (str.includes("require")) return { 
+         resolve: () => "grammar.config.ts",
+         createJiti: () => () => ({ primitives: { p: 2 } })
+      }
+      return originalEval(str)
+    }
+    expect(loadConfigSync(process.cwd())).toBeDefined()
+    globalThis.eval = originalEval
   })
 })

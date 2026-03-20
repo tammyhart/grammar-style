@@ -9,7 +9,7 @@ test("media proxy safely evaluates triggers seamlessly from unhydrated empty cac
   vi.doMock("./config", () => ({
     loadConfigSync: vi.fn(() => ({
       options: { breakpoints: { mobile: "20rem" } },
-      primitives: { size: { "600": "37.5rem" } },
+      primitives: {},
       semantics: {}
     }))
   }))
@@ -36,7 +36,7 @@ test("proxy throws elegantly on missing config file", async () => {
   }))
 
   const { default: nullMedia } = await import("./media")
-  expect(() => nullMedia.mobile).toThrow("Could not find grammar.config.ts") // Hits line 26
+  expect(() => (nullMedia as any).mobile).toThrow("Could not find grammar.config.ts") // Hits line 26
 })
 
 test("browser environment strictly mitigates config file reading entirely", async () => {
@@ -57,8 +57,8 @@ test("browser environment strictly mitigates config file reading entirely", asyn
   expect("mobile" in browserBreakpoint).toBe(false) // Hits line 95
 
   // Fetching properties strictly throws runtime browser errors structurally
-  expect(() => browserMedia.mobile).toThrow("browser runtime components") // Hits line 20
+  expect(() => (browserMedia as any).mobile).toThrow("browser runtime components") // Hits line 20
   
   // breakpoint object also inherently verifies the browser
-  expect(() => browserBreakpoint.mobile).toThrow("browser runtime components") // Hits line 69-75 (through trigger)
+  expect(() => (browserBreakpoint as any).mobile).toThrow("browser runtime components") // Hits line 69-75 (through trigger)
 })

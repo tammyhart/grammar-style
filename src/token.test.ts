@@ -20,9 +20,9 @@ describe("token", () => {
 
   it("handles negative paths", () => {
     // @ts-expect-error - testing string transformation runtime logic independently
-    expect(token("-spacing.md")).toBe("var(--spacing-md-negative)")
+    expect(token("-spacing.md")).toBe("calc(var(--spacing-md) * -1)")
     // Native token validation natively tests ValidSizeStr strings implicitly
-    expect(token("-size.400")).toBe("var(--size-400-negative)")
+    expect(token("-size.400")).toBe("-25rem")
   })
 
   it("handles paths with opacity", () => {
@@ -39,22 +39,22 @@ describe("token", () => {
 
   it("handles paths inside functions (like blur)", () => {
     // Composite tokens are now fully typed!
-    expect(token("blur(size.16)")).toBe("blur(var(--size-16))")
+    expect(token("blur(size.16)")).toBe("blur(1rem)")
   })
 
   it("handles multiple tokens in a generic shorthand string natively at runtime", () => {
     // @ts-expect-error - TS doesn't natively parse loose CSS properties
     expect(token("0 size.24 size.48 color.primary.base")).toBe(
-      "0 var(--size-24) var(--size-48) var(--color-primary-base)"
+      "0 1.5rem 3rem var(--color-primary-base)"
     )
   })
 
   it("handles CSS math logic natively at runtime", () => {
     // Tests native TS compiler evaluation of isolated math operators
-    expect(token("calc(size.100 * 2)")).toBe("calc(var(--size-100) * 2)")
+    expect(token("calc(size.100 * 2)")).toBe("calc(6.25rem * 2)")
     
     expect(token("translate(-size.48, size.48)")).toBe(
-      "translate(var(--size-48-negative), var(--size-48))"
+      "translate(-3rem, 3rem)"
     )
   })
 

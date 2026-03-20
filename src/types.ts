@@ -146,8 +146,9 @@ export type ValidateObject<Input, P, IsPrimitive extends boolean = false, Ops ex
 }
 
 export type ValidateRootObject<Input, P, IsPrimitive extends boolean = false, Ops extends string | number = ValidOpacityName> = {
-  [K in keyof Input]: Input[K] extends object ? ValidateObject<Input[K], P, IsPrimitive, Ops>
-  : "Error: Tokens must be nested at least one level deep (e.g., namespace: { key: 'value' }) to generate valid dot paths."
+  [K in keyof Input]: IsPrimitive extends true 
+    ? (K extends "size" ? "Error: The 'size' primitive is a built-in constant and cannot be overridden." : Input[K] extends object ? ValidateObject<Input[K], P, IsPrimitive, Ops> : "Error: Tokens must be nested at least one level deep (e.g., namespace: { key: 'value' }) to generate valid dot paths.")
+    : (Input[K] extends object ? ValidateObject<Input[K], P, IsPrimitive, Ops> : "Error: Tokens must be nested at least one level deep (e.g., namespace: { key: 'value' }) to generate valid dot paths.")
 }
 
 export type ExpectedShape<Input, P, Ops extends string | number = ValidOpacityName> = {

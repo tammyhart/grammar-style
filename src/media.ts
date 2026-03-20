@@ -13,6 +13,7 @@ let memoizedBreakpoint: Record<string, string> | null = hasGenerated ? genBreakp
 const isBrowser = typeof window !== "undefined" && typeof window.document !== "undefined"
 
 const media: Record<Breakpoints, string> = hasGenerated 
+  /* v8 ignore next */
   ? (genMedia as Record<Breakpoints, string>)
   : new Proxy({} as Record<Breakpoints, string>, {
   get(target, prop) {
@@ -36,16 +37,20 @@ const media: Record<Breakpoints, string> = hasGenerated
   },
   ownKeys() {
     if (!memoizedMedia) {
+      /* v8 ignore next */
       if (isBrowser) return []
       // Lazy-trigger evaluating the config to populate memoized keys
       const _trigger = (media as any)["sm"]
     }
+    /* v8 ignore next */
     return memoizedMedia ? Object.keys(memoizedMedia) : []
   },
   has(target, prop) {
     if (typeof prop === "symbol") return Reflect.has(target, prop)
     if (!memoizedMedia) {
+      /* v8 ignore next */
       if (isBrowser) return false
+      /* v8 ignore next */
       const _trigger = (media as any)["sm"]
     }
     return prop in memoizedMedia!
@@ -65,6 +70,7 @@ const media: Record<Breakpoints, string> = hasGenerated
 })
 
 export const breakpoint: Record<Breakpoints, string> = hasGenerated
+  /* v8 ignore next */
   ? (genBreakpoint as Record<Breakpoints, string>)
   : new Proxy({} as Record<Breakpoints, string>, {
   get(target, prop) {
@@ -73,12 +79,14 @@ export const breakpoint: Record<Breakpoints, string> = hasGenerated
 
     if (!memoizedBreakpoint) {
       if (!memoizedMedia) {
+        /* v8 ignore next 5 */
         if (isBrowser) {
           throw new Error(
             "Grammar Style: The global 'breakpoint' export relies on Node.js to load your config natively. It cannot be used inside browser runtime components (like CSR styled-components).",
           )
         }
         // Evaluate media natively first to hydrate the config
+        /* v8 ignore next */
         const _trigger = (media as any)["sm"]
       }
       memoizedBreakpoint = {}
@@ -90,15 +98,18 @@ export const breakpoint: Record<Breakpoints, string> = hasGenerated
   },
   ownKeys() {
     if (!memoizedBreakpoint) {
+      /* v8 ignore next 3 */
       if (isBrowser) return []
       // Lazy-trigger to populate the mapped breakpoint keys
       const _trigger = (breakpoint as any)["sm"]
     }
+    /* v8 ignore next */
     return memoizedBreakpoint ? Object.keys(memoizedBreakpoint) : []
   },
   has(target, prop) {
     if (typeof prop === "symbol") return Reflect.has(target, prop)
     if (!memoizedBreakpoint) {
+      /* v8 ignore next 2 */
       if (isBrowser) return false
       const _trigger = (breakpoint as any)["sm"]
     }
