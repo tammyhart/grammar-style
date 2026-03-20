@@ -1,5 +1,11 @@
 # grammar-style
 
+## 0.3.5
+
+### Patch Changes
+
+- chore: linaria babel patch
+
 ## 0.3.4
 
 ### Patch Changes
