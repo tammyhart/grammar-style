@@ -1,5 +1,11 @@
 # grammar-style
 
+## 0.3.12
+
+### Patch Changes
+
+- Refactored `node:path` and `jiti` module loader boundaries dynamically inside `grammar-style` configuration boots to bypass aggressive AST sandbox traces natively, preventing the Next.js Browser extraction compiler from attempting to illegally bundle `node:module` into Client Components globally.
+
 ## 0.3.11
 
 ### Patch Changes

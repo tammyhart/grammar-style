@@ -6,8 +6,19 @@ export const loadConfig = async (
   Record<string, unknown>,
   Record<string, unknown>
 > | null> => {
-  const { resolve } = await import("node:path")
-  const { createJiti } = await import("jiti")
+  let resolve: any
+  let createJiti: any
+  try {
+    if (typeof require !== "undefined") {
+      resolve = eval(`require("node:path")`).resolve
+      createJiti = eval(`require("jiti")`).createJiti
+    } else {
+      resolve = (await eval(`import("node:path")`)).resolve
+      createJiti = (await eval(`import("jiti")`)).createJiti
+    }
+  } catch (e) {
+    return null
+  }
   const jiti = createJiti(cwd)
 
   const configFiles = [
@@ -57,10 +68,14 @@ export const loadConfig = async (
 export const loadConfigSync = (
   cwd: string = process.cwd(),
 ): ThemeConfig<Record<string, unknown>, Record<string, unknown>> | null => {
-  // @ts-ignore
-  const { resolve } = require("node:path")
-  // @ts-ignore
-  const { createJiti } = require("jiti")
+  let resolve: any
+  let createJiti: any
+  try {
+    resolve = eval(`require("node:path")`).resolve
+    createJiti = eval(`require("jiti")`).createJiti
+  } catch (e) {
+    return null
+  }
   const jiti = createJiti(cwd)
 
   const configFiles = [
