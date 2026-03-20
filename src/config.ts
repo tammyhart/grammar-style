@@ -9,13 +9,11 @@ export const loadConfig = async (
   let resolve: any
   let createJiti: any
   try {
-    if (typeof require !== "undefined") {
-      resolve = eval(`require("node:path")`).resolve
-      createJiti = eval(`require("jiti")`).createJiti
-    } else {
-      resolve = (await eval(`import("node:path")`)).resolve
-      createJiti = (await eval(`import("jiti")`)).createJiti
-    }
+    const pTarget = "node" + ":" + "path"
+    const jTarget = "ji" + "ti"
+    resolve = (await import(/* @vite-ignore */ pTarget)).resolve
+    const jMod = await import(/* @vite-ignore */ jTarget)
+    createJiti = jMod.createJiti || (jMod.default && jMod.default.createJiti) || jMod.default
   } catch (e) {
     return null
   }

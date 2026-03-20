@@ -1,5 +1,11 @@
 # grammar-style
 
+## 0.3.13
+
+### Patch Changes
+
+- Fixed a Node ESM execution boundary crash inside `bin/cli.mjs` where `eval('import(...)')` blocked native dynamic module resolution for the `generate` command, triggering a false 'Could not find config' failure. Replaced eval traces securely with Vite-ignored string concatenation.
+
 ## 0.3.12
 
 ### Patch Changes
