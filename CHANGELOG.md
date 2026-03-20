@@ -1,5 +1,11 @@
 # grammar-style
 
+## 0.3.10
+
+### Patch Changes
+
+- Added a new `"grammar-style/generated"` export that bypasses the internal module dependency graph completely. If you execute `grammar-style generate` during your build step, `import { media } from "grammar-style/generated"` will statically resolve the plain AST objects natively without crashing CSS-in-JS sandbox extractors (Linaria, Vanilla Extract).
+
 ## 0.3.9
 
 ### Patch Changes
