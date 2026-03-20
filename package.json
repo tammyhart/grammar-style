@@ -50,7 +50,8 @@
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "bin": {
-    "grammar-init": "bin/init.mjs"
+    "grammar-init": "bin/init.mjs",
+    "grammar-style": "bin/cli.mjs"
   },
   "directories": {
     "test": "test"

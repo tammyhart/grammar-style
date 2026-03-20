@@ -24,3 +24,13 @@ test("createStyledComponentsTheme generates css mapping and GlobalThemeStyle", (
   expect(result.GlobalThemeStyle).toBeDefined()
   expect(result.cssText).toBeDefined()
 })
+
+test("createStyledComponentsTheme accepts providedConfig explicitly", () => {
+  const customConfig = {
+    primitives: { color: { explicitlyPassed: "#123456" } },
+    semantics: { color: { mapped: "color.explicitlyPassed" } }
+  } as any;
+  
+  const result = createStyledComponentsTheme(customConfig)
+  expect((result.styledComponents.semantics as any).color.mapped).toBe("var(--color-mapped)")
+})

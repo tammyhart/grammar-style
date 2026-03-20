@@ -19,3 +19,13 @@ test("createStylexTheme generates css variable mapping", () => {
   expect((result.stylex.semantics as any).color.primary).toBe("var(--color-primary)")
   expect((result.stylex.primitives as any).color.brand).toBe("var(--color-brand)")
 })
+
+test("createStylexTheme accepts providedConfig explicitly", () => {
+  const customConfig = {
+    primitives: { color: { explicitlyPassed: "#123456" } },
+    semantics: { color: { explicitlyMapped: "color.explicitlyPassed" } }
+  } as any;
+  
+  const result = createStylexTheme(customConfig)
+  expect((result.stylex.primitives as any).color.explicitlyPassed).toBe("var(--color-explicitlyPassed)")
+})

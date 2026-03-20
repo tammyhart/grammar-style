@@ -16,7 +16,16 @@ test("createLinariaTheme generates expected structure", () => {
     expect(result.cssText).toBeDefined()
   } catch (err: any) {
     // Linaria core css throws an error saying it's not supported at runtime natively.
-    // If we're not running babel plugin in vitest, we expect this throw.
     expect(err.message).toContain("supported")
   }
+})
+
+test("createLinariaTheme accepts providedConfig explicitly", () => {
+  const customConfig = {
+    primitives: { color: { explicitlyPassed: "#123456" } },
+    semantics: {}
+  } as any;
+  
+  const result = createLinariaTheme(customConfig)
+  expect(result.cssText).toContain("--color-explicitlyPassed: #123456;")
 })

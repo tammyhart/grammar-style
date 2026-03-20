@@ -2,6 +2,18 @@
 
 `grammar-style` is framework-agnostic. To bridge the gap between your strictly-typed dictionary and your favorite styling tool, we provide instant adapter functions that automatically parse your `grammar.config.ts` into the exact shape expected by the compiler!
 
+## 🔒 Strict Sandboxes (Linaria, Vanilla Extract, Next.js)
+If your framework evaluates code within a strict AST sandbox that prevents dynamic disk I/O (`fs`, `node:path`), calling an adapter parameterless (e.g. `createLinariaTheme()`) will crash the build, since it tries to dynamically read the config file.
+To completely bypass all Node built-ins inside sandboxes, manually import and pass your configuration object directly into the adapter:
+
+```typescript
+import config from "../../grammar.config.ts"
+// Natively evaluates the passed object! Zero disk I/O, Sandbox Approved! 
+const grammar = createLinariaTheme(config)
+```
+
+---
+
 ## 1. Tailwind CSS
 
 Drop `grammar-style` natively into your `tailwind.config.ts` to seamlessly map all semantic variables and base primitives into standard Tailwind utility classes (e.g., `text-primary`, `mt-brand`, `rounded-soft`, `max-md`).

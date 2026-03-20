@@ -25,3 +25,13 @@ test("createEmotionTheme generates css mapping and GlobalThemeStyle", () => {
   expect(result.GlobalThemeStyle).toBeDefined()
   expect(result.GlobalThemeStyle()).toBeDefined() // Covers the internal branch evaluation
 })
+
+test("createEmotionTheme accepts providedConfig explicitly", () => {
+  const customConfig = {
+    primitives: { color: { explicitlyPassed: "#123456" } },
+    semantics: { color: { mapped: "color.explicitlyPassed" } }
+  } as any;
+  
+  const result = createEmotionTheme(customConfig)
+  expect((result.emotion.semantics as any).color.mapped).toBe("var(--color-mapped)")
+})

@@ -1,5 +1,3 @@
-import { resolve } from "node:path"
-import { createJiti } from "jiti"
 import type { ThemeConfig, DeepPartial } from "./types"
 
 export const loadConfig = async (
@@ -8,6 +6,8 @@ export const loadConfig = async (
   Record<string, unknown>,
   Record<string, unknown>
 > | null> => {
+  const { resolve } = await import("node:path")
+  const { createJiti } = await import("jiti")
   const jiti = createJiti(cwd)
 
   const configFiles = [
@@ -57,6 +57,10 @@ export const loadConfig = async (
 export const loadConfigSync = (
   cwd: string = process.cwd(),
 ): ThemeConfig<Record<string, unknown>, Record<string, unknown>> | null => {
+  // @ts-ignore
+  const { resolve } = require("node:path")
+  // @ts-ignore
+  const { createJiti } = require("jiti")
   const jiti = createJiti(cwd)
 
   const configFiles = [

@@ -51,3 +51,14 @@ test("tailwind gracefully resolves missing primitive and semantic dictionaries s
   expect(ex?.boxShadow).toEqual({})
   expect(ex?.borderRadius).toEqual({})
 })
+
+test("createTailwindTheme accepts providedConfig explicitly", () => {
+  const customConfig = {
+    primitives: { color: { explicitlyPassed: "#123456" } },
+    semantics: { color: { explicitlyMapped: "color.explicitlyPassed" } },
+    options: {}
+  } as any;
+  
+  const result = createTailwindTheme(customConfig)
+  expect((result.theme?.extend?.colors as any)?.explicitlyPassed).toBe("var(--color-explicitlyPassed)")
+})

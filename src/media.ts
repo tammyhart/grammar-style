@@ -1,13 +1,14 @@
 import { loadConfigSync } from "./config"
 import { createTheme } from "./core"
 import type { AllowedBreakpoints, ThemeConfig, Register } from "./types"
+import { media as genMedia, breakpoint as genBreakpoint, hasGenerated } from "./generated"
 
 // Extract strongly typed breakpoints from the user's config if they defined the module augmentation
 type Config = Register extends { theme: infer T } ? T : ThemeConfig<any, any>
 type Breakpoints = AllowedBreakpoints<Config>
 
-let memoizedMedia: Record<string, string> | null = null
-let memoizedBreakpoint: Record<string, string> | null = null
+let memoizedMedia: Record<string, string> | null = hasGenerated ? genMedia : null
+let memoizedBreakpoint: Record<string, string> | null = hasGenerated ? genBreakpoint : null
 
 const isBrowser = typeof window !== "undefined" && typeof window.document !== "undefined"
 

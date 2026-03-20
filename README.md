@@ -41,6 +41,23 @@ Generate a `grammar.config.ts` boilerplate file right in your project:
 npx grammar-init
 ```
 
+If you are using strict zero-runtime sandboxed libraries (like Linaria or Vanilla Extract) and want to use the global `media` exports, generate your cached tokens:
+
+```bash
+npx grammar-style generate
+```
+
+> 💡 **Pro-Tip: Chain the Generator!**
+> Because `media` breakpoints are globally cached in your `node_modules`, you should automate this. Add it to your `package.json` scripts so they regenerate automatically every time you start your development server!
+> ```json
+> {
+>   "scripts": {
+>     "dev": "grammar-style generate && <your-framework-dev-command>",
+>     "build": "grammar-style generate && <your-framework-build-command>"
+>   }
+> }
+> ```
+
 ## 📓 Concept: `defineGrammar`
 
 The core of `grammar-style` is `defineGrammar`, the typed definition engine. Design systems often suffer from disconnected tokens across different surfaces. `defineGrammar` forces your config to strongly adhere to two layers: **Primitives** and **Semantics**.
@@ -320,6 +337,9 @@ export const Box = () => (
 
 In addition to `token()`, `grammar-style` natively exposes a `media` object directly from the root package. It is a Proxy that lazily inspects your `grammar.config` breakpoints and automatically evaluates them into properly formatted, reusable `@media` query strings.
 
+> **⚠️ Strict Sandbox Warning (Linaria, Vanilla Extract, Next.js):**
+> If your styling framework restricts Node built-ins (`fs`, `jiti`) during compilation, importing `media` directly will throw a Sandbox Error. To fix this, run `npx grammar-style generate` (or add it to your `package.json` dev script) to dump a statically readable token cache!
+
 For CSS-in-JS libraries that use object syntax and expect raw condition strings (like Vanilla Extract or StyleX) instead of full `@media` wrappers, we also export a native `breakpoint` object.
 
 ### 1. Template Strings (Linaria, Styled Components)
@@ -372,6 +392,13 @@ Available natively out-of-the-box:
 - [Linaria](./docs/adapters.md#7-linaria)
 
 Just drop the adapter directly into your framework's provider or config plugin layer and move on to building your application!
+
+### 🔒 Strict Sandbox Mode (Optional)
+If your framework evaluates code in a strictly isolated AST sandbox (like Linaria or Vanilla-Extract inside Next.js/Vite) that bans Node.js disk reading, you can optionally pass your config object **explicitly** into any adapter to completely bypass dynamic disk reads!
+```typescript
+import config from "../../grammar.config.ts"
+const grammar = createLinariaTheme(config)
+```
 
 ### Example 1: Tailwind CSS
 

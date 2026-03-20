@@ -26,8 +26,9 @@ const createPandaTheme = <
   P extends Record<string, unknown>,
   S extends Record<string, unknown>
 >(
-  ) => {
-  const loadedConfig = loadConfigSync() as ThemeConfig<P, S>;
+  providedConfig?: ThemeConfig<P, S>
+) => {
+  const loadedConfig = (providedConfig || loadConfigSync()) as ThemeConfig<P, S>;
   if (!loadedConfig) throw new Error("Grammar Style: Could not find grammar.config.ts");
   const theme = createTheme(loadedConfig)
 
