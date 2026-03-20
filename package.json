@@ -35,6 +35,11 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
+    "./adapters": {
+      "types": "./dist/adapters/index.d.ts",
+      "import": "./dist/adapters/index.mjs",
+      "require": "./dist/adapters/index.js"
+    },
     "./adapters/*": {
       "types": "./dist/adapters/*.d.ts",
       "import": "./dist/adapters/*.mjs",
