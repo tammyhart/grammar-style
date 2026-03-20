@@ -1,0 +1,40 @@
+import { createTheme } from "../core"
+import type { ThemeConfig } from "../types"
+
+const isObject = (item: unknown): item is Record<string, unknown> => {
+  return !!item && typeof item === "object" && !Array.isArray(item)
+}
+
+const mapToTailwindVars = (
+  obj: Record<string, unknown>,
+  prefix: string[] = []
+): Record<string, unknown> => {
+  const result: Record<string, unknown> = {}
+  Object.entries(obj).forEach(([key, value]) => {
+    if (isObject(value)) {
+      result[key] = mapToTailwindVars(value, [...prefix, key])
+    } else {
+      result[key] = `var(--${[...prefix, key].join("-")})`
+    }
+  })
+  return result
+}
+
+const createTailwindTheme = <
+  P extends Record<string, unknown>,
+  S extends Record<string, unknown>
+>(
+  config: ThemeConfig<P, S>
+) => {
+  const theme = createTheme(config)
+
+  return {
+    ...theme,
+    tailwind: {
+      primitives: mapToTailwindVars(theme.primitives as Record<string, unknown>) as P,
+      semantics: mapToTailwindVars(theme.tokens as Record<string, unknown>) as S,
+    },
+  }
+}
+
+export default createTailwindTheme
