@@ -14,13 +14,13 @@
     "panda",
     "vanilla-extract"
   ],
-  "homepage": "https://github.com/grammar-style/grammar-style#readme",
+  "homepage": "https://github.com/tammyhart/grammar-style#readme",
   "bugs": {
-    "url": "https://github.com/grammar-style/grammar-style/issues"
+    "url": "https://github.com/tammyhart/grammar-style/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/grammar-style/grammar-style.git"
+    "url": "git+https://github.com/tammyhart/grammar-style.git"
   },
   "license": "MIT",
   "author": {
