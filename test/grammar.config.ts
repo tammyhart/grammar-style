@@ -1,4 +1,4 @@
-import { defineGrammar } from "./src"
+import { defineGrammar } from "../src"
 
 export default defineGrammar({
   options: {
