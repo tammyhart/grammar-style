@@ -4,7 +4,10 @@ import type { ThemeConfig, DeepPartial } from "./types"
 
 export const loadConfig = async (
   cwd: string = process.cwd(),
-): Promise<ThemeConfig<Record<string, unknown>, Record<string, unknown>> | null> => {
+): Promise<ThemeConfig<
+  Record<string, unknown>,
+  Record<string, unknown>
+> | null> => {
   const jiti = createJiti(cwd)
 
   const configFiles = [
@@ -21,17 +24,27 @@ export const loadConfig = async (
       // Jiti resolves TS and ESM in Node natively
       const parsedConfig = (await jiti.import(filePath, { default: true })) as
         | ThemeConfig<Record<string, unknown>, Record<string, unknown>>
-        | { default: ThemeConfig<Record<string, unknown>, Record<string, unknown>> }
+        | {
+            default: ThemeConfig<
+              Record<string, unknown>,
+              Record<string, unknown>
+            >
+          }
 
       // /* v8 ignore next */ required because jiti internally normalizes esm default wrappers unpredictably
       /* v8 ignore next */
       const config =
-        parsedConfig && "default" in parsedConfig ? parsedConfig.default : parsedConfig
+        parsedConfig && "default" in parsedConfig
+          ? parsedConfig.default
+          : parsedConfig
       return config
     } catch (e: unknown) {
       // Allow module not found, throw on syntax errors
       const err = e as { code?: string }
-      if (err.code !== "MODULE_NOT_FOUND" && err.code !== "ERR_MODULE_NOT_FOUND") {
+      if (
+        err.code !== "MODULE_NOT_FOUND" &&
+        err.code !== "ERR_MODULE_NOT_FOUND"
+      ) {
         console.error(`Error loading ${file}:`, e)
         throw e
       }
@@ -60,17 +73,25 @@ export const loadConfigSync = (
       // @ts-ignore
       const parsedConfig = jiti(filePath) as
         | ThemeConfig<Record<string, unknown>, Record<string, unknown>>
-        | { default: ThemeConfig<Record<string, unknown>, Record<string, unknown>> }
+        | {
+            default: ThemeConfig<
+              Record<string, unknown>,
+              Record<string, unknown>
+            >
+          }
 
-      // /* v8 ignore next */ required because jiti internally normalizes esm default wrappers unpredictably
-      /* v8 ignore next */
       const config =
-        parsedConfig && "default" in parsedConfig ? parsedConfig.default : parsedConfig
+        parsedConfig && "default" in parsedConfig
+          ? parsedConfig.default
+          : parsedConfig
       return config
     } catch (e: unknown) {
       // Allow module not found, throw on syntax errors
       const err = e as { code?: string }
-      if (err.code !== "MODULE_NOT_FOUND" && err.code !== "ERR_MODULE_NOT_FOUND") {
+      if (
+        err.code !== "MODULE_NOT_FOUND" &&
+        err.code !== "ERR_MODULE_NOT_FOUND"
+      ) {
         console.error(`Error loading ${file}:`, e)
         throw e
       }

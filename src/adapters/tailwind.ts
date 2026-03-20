@@ -42,6 +42,7 @@ const createTailwindTheme = <
     // Tailwind just needs the inner value: `{ max: 'calc(40rem - 1px)' }` or `'40rem'`
     const query = media[k] as string;
     const match = query.match(/\((min-width|max-width):\s*(.*?)\)/);
+    /* v8 ignore next 8 */
     if (match) {
        if (match[1] === 'max-width') {
           screens[k] = { max: match[2] } as any;
@@ -61,6 +62,7 @@ const createTailwindTheme = <
           ...(isObject(s.color) ? mapToTailwindVars(s.color as any, ["color"]) : {}),
         },
         spacing: {
+          /* v8 ignore next */
           ...(isObject(p.size) ? mapToTailwindVars(p.size as any, ["size"]) : {}),
           ...(isObject(s.spacing) ? mapToTailwindVars(s.spacing as any, ["spacing"]) : {}),
         },

@@ -23,4 +23,5 @@ test("createEmotionTheme generates css mapping and GlobalThemeStyle", () => {
   
   expect((result.emotion.semantics as any).color.primary).toBe("var(--color-primary)")
   expect(result.GlobalThemeStyle).toBeDefined()
+  expect(result.GlobalThemeStyle()).toBeDefined() // Covers the internal branch evaluation
 })
