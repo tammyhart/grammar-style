@@ -8,7 +8,6 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   external: [
-    "./generated",
     "@linaria/core",
     "styled-components",
     "@emotion/react",
