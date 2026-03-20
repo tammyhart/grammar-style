@@ -1,5 +1,11 @@
 # grammar-style
 
+## 0.3.1
+
+### Patch Changes
+
+- Update ownership
+
 ## 0.3.0
 
 ### Minor Changes
