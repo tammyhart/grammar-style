@@ -49,6 +49,7 @@ npx grammar-style generate
 
 > 💡 **Pro-Tip: Chain the Generator!**
 > Because `media` breakpoints are globally cached in your `node_modules`, you should automate this. Add it to your `package.json` scripts so they regenerate automatically every time you start your development server!
+>
 > ```json
 > {
 >   "scripts": {
@@ -127,12 +128,12 @@ Instead of injecting 700+ size variables into global CSS which balloons performa
 
 The `options` block lets you overwrite the core rules of your token validation.
 
-| Option        | Default Value                                                                                        | Description                                                                                                                                                                                                                                                                                                  |
-| :------------ | :--------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `opacities`   | `[10, 20, 40, 60, 80, 100]`                                                                          | Restricts allowed transparency fractions. Supply an array of mapping numerals (e.g. `[10, 50]`) to redefine opacity strings natively (`/10`, `/50`) across your semantic object bindings.                                                                                                                    |
-| `breakpoints` | `sm: "size.640"`<br>`md: "size.768"`<br>`lg: "size.1024"`<br>`xl: "size.1280"`<br>`xxl: "size.1536"` | Standard responsive layout endpoints. Implicitly generates **Max** variants for every key natively (e.g. `lgMax` safely maps to scaling `rem` math emitting `max-width: calc(64rem - 1px)` to avoid cross-breakpoint layout collisions natively). Map exclusively to custom `size.*` primitives to override. |
-| `modes`       | `["dark", "light"]`                                                                                  | Strings enforcing structurally validated root wrapper themes mapping safely toward conditional CSS elements natively like `[data-theme="dark"]`.                                                                                                                                                             |
-| `useStrictSizes` | `true`                                                                                               | Enforces mathematical constraints (`size.4`, `size.16`). Passing `false` removes geometric compilation locks, allowing arbitrary tokens like `size.15` to be safely passed anywhere inside your configuration semantics or `token("size.15")` utility seamlessly without breaking Type-Checking.                                                                        |
+| Option           | Default Value                                                                                        | Description                                                                                                                                                                                                                                                                                                  |
+| :--------------- | :--------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `opacities`      | `[10, 20, 40, 60, 80, 100]`                                                                          | Restricts allowed transparency fractions. Supply an array of mapping numerals (e.g. `[10, 50]`) to redefine opacity strings natively (`/10`, `/50`) across your semantic object bindings.                                                                                                                    |
+| `breakpoints`    | `sm: "size.640"`<br>`md: "size.768"`<br>`lg: "size.1024"`<br>`xl: "size.1280"`<br>`xxl: "size.1536"` | Standard responsive layout endpoints. Implicitly generates **Max** variants for every key natively (e.g. `lgMax` safely maps to scaling `rem` math emitting `max-width: calc(64rem - 1px)` to avoid cross-breakpoint layout collisions natively). Map exclusively to custom `size.*` primitives to override. |
+| `modes`          | `["dark", "light"]`                                                                                  | Strings enforcing structurally validated root wrapper themes mapping safely toward conditional CSS elements natively like `[data-theme="dark"]`.                                                                                                                                                             |
+| `useStrictSizes` | `true`                                                                                               | Enforces mathematical constraints (`size.4`, `size.16`). Passing `false` removes geometric compilation locks, allowing arbitrary tokens like `size.15` to be safely passed anywhere inside your configuration or `token("size.15")` utility seamlessly without breaking Type-Checking.                       |
 
 ```javascript
 import { defineGrammar } from "grammar-style"
@@ -394,7 +395,9 @@ Available natively out-of-the-box:
 Just drop the adapter directly into your framework's provider or config plugin layer and move on to building your application!
 
 ### 🔒 Strict Sandbox Mode (Optional)
+
 If your framework evaluates code in a strictly isolated AST sandbox (like Linaria or Vanilla-Extract inside Next.js/Vite) that bans Node.js disk reading, you can optionally pass your config object **explicitly** into any adapter to completely bypass dynamic disk reads!
+
 ```typescript
 import config from "../../grammar.config.ts"
 const grammar = createLinariaTheme(config)
