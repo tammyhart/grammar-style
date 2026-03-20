@@ -93,7 +93,7 @@ export const createTheme = <
 >(
   config: ThemeConfig<P, S>,
 ) => {
-  if (config.primitives && 'size' in config.primitives) {
+  if (config.primitives && 'size' in config.primitives && config.options?.useStrictSizes !== false) {
     throw new Error("Grammar Style: The 'size' primitive is a strict geometric constant and cannot be overridden. Please remove 'size' from your config.primitives.")
   }
 
@@ -134,7 +134,7 @@ export const createTheme = <
   })
 
   const primitives = {
-    size: defaultSizes,
+    size: { ...defaultSizes, ...(config.primitives?.size as any || {}) },
     ...(config.primitives || ({} as P)),
   } as P & { size: typeof defaultSizes }
 

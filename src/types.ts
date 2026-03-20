@@ -145,9 +145,9 @@ export type ValidateObject<Input, P, IsPrimitive extends boolean = false, Ops ex
   : Input[K]
 }
 
-export type ValidateRootObject<Input, P, IsPrimitive extends boolean = false, Ops extends string | number = ValidOpacityName> = {
+export type ValidateRootObject<Input, P, IsPrimitive extends boolean = false, Ops extends string | number = ValidOpacityName, StrictSizes extends boolean = true> = {
   [K in keyof Input]: IsPrimitive extends true 
-    ? (K extends "size" ? "Error: The 'size' primitive is a built-in constant and cannot be overridden." : Input[K] extends object ? ValidateObject<Input[K], P, IsPrimitive, Ops> : "Error: Tokens must be nested at least one level deep (e.g., namespace: { key: 'value' }) to generate valid dot paths.")
+    ? (K extends "size" ? (StrictSizes extends false ? (Input[K] extends object ? ValidateObject<Input[K], P, IsPrimitive, Ops> : "Error: Tokens must be nested at least one level deep.") : "Error: The 'size' primitive is a built-in constant and cannot be overridden.") : Input[K] extends object ? ValidateObject<Input[K], P, IsPrimitive, Ops> : "Error: Tokens must be nested at least one level deep (e.g., namespace: { key: 'value' }) to generate valid dot paths.")
     : (Input[K] extends object ? ValidateObject<Input[K], P, IsPrimitive, Ops> : "Error: Tokens must be nested at least one level deep (e.g., namespace: { key: 'value' }) to generate valid dot paths.")
 }
 
@@ -248,6 +248,7 @@ export interface ThemeConfig<
     breakpoints?: Record<string, string>
     modes?: readonly string[]
     opacities?: readonly number[]
+    useStrictSizes?: boolean
   }
   primitives?: P
   semantics: S
@@ -261,6 +262,7 @@ export interface BaseGrammarConfig<P> {
     breakpoints?: Record<string, string>
     modes?: readonly string[]
     opacities?: readonly number[]
+    useStrictSizes?: boolean
   }
   primitives?: P
   semantics: object
@@ -389,6 +391,11 @@ export type ValidateResponsive<R, S, P, C> = {
   : "Error: Responsive key must be a valid base breakpoint name (or its 'Max' equivalent)."
 }
 
+export type ExtractStrictSizes<C> = 
+  C extends { options?: { useStrictSizes?: infer S } } ? 
+    (S extends false ? false : true) 
+  : true;
+
 export type ValidatedConfig<
   P,
   C,
@@ -403,8 +410,9 @@ export type ValidatedConfig<
     breakpoints?: ValidateBreakpoints<ExtractB<C>>
     modes?: readonly string[]
     opacities?: ValidateOpacitiesArray<O>
+    useStrictSizes?: ExtractStrictSizes<C> extends false ? false : boolean
   }
-  primitives?: ValidateRootObject<P, P & CorePrimitives, true, AllowedOpacities<C> & (string | number)>
+  primitives?: ValidateRootObject<P, P & CorePrimitives, true, AllowedOpacities<C> & (string | number), ExtractStrictSizes<C>>
   semantics: ExpectedRootShape<ExtractS<C>, P & CorePrimitives, AllowedOpacities<C> & (string | number)>
   modes?: ValidateModes<ExtractM<C>, ExtractS<C>, P & CorePrimitives, C>
   responsive?: ValidateResponsive<

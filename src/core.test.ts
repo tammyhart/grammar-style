@@ -71,6 +71,28 @@ describe("createTheme", () => {
     expect(theme.cssText).toContain("--negative: -25rem;")
   })
 
+  it("throws if size primitive is overridden without explicitly disabling useStrictSizes", () => {
+    const customConfig = {
+      primitives: { size: { overrides: "bad" } },
+      semantics: {},
+    } as any
+
+    expect(() => createTheme(customConfig)).toThrow(
+      "The 'size' primitive is a strict geometric constant",
+    )
+  })
+
+  it("allows size primitive overrides if useStrictSizes is explicitly false", () => {
+    const customConfig = {
+      options: { useStrictSizes: false },
+      primitives: { size: { "15": "15px" } },
+      semantics: {},
+    } as any
+
+    const result = createTheme(customConfig)
+    expect((result.primitives as any).size["15"]).toBe("15px")
+  })
+
   it("throws error if size is included in primitives", () => {
     const badConfig = { primitives: { size: { "16": "1rem" } }, semantics: {} }
     expect(() => createTheme(badConfig as any)).toThrow("strict geometric constant")
