@@ -9,15 +9,8 @@ vi.mock("../config", () => ({
 }));
 
 test("createLinariaTheme generates expected structure", () => {
-  // Just testing if it returns the right keys since evaluating css tag might throw without babel plugin!
-  try {
-    const result = createLinariaTheme()
-    expect(result.globals).toBeDefined()
-    expect(result.cssText).toBeDefined()
-  } catch (err: any) {
-    // Linaria core css throws an error saying it's not supported at runtime natively.
-    expect(err.message).toContain("supported")
-  }
+  const result = createLinariaTheme()
+  expect(result.cssText).toBeDefined()
 })
 
 test("createLinariaTheme accepts providedConfig explicitly", () => {

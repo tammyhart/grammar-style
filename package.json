@@ -76,7 +76,6 @@
   "devDependencies": {
     "@changesets/cli": "^2.30.0",
     "@emotion/react": "^11.14.0",
-    "@linaria/core": "^7.0.0",
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
     "@types/styled-components": "^5.1.36",
@@ -91,14 +90,10 @@
   },
   "peerDependencies": {
     "@emotion/react": ">=11.0.0",
-    "@linaria/core": ">=3.0.0",
     "styled-components": ">=6.0.0"
   },
   "peerDependenciesMeta": {
     "@emotion/react": {
-      "optional": true
-    },
-    "@linaria/core": {
       "optional": true
     },
     "styled-components": {
