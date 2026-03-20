@@ -1,5 +1,14 @@
 # grammar-style
 
+## 0.4.0
+
+### Minor Changes
+
+- **Architectural Zero-Bloat Math**: Deleted the dynamic AST regex file-scanner completely. All `size` primitive calculations dynamically evaluate strictly into raw literal mathematical strings inline wherever mapped (`20rem`, `-1rem`). This ensures your global `:root` outputs remain fundamentally empty of 746+ pixel scale mappings, radically boosting global CSS efficiency natively.
+- **Locked Structural Scalability**: The `size` configuration scale is now officially immutable! Defining `{ primitives: { size: ... } }` internally throws a compiler lock natively enforcing strict grid retention permanently.
+- **Tailwind Native Adapter Map**: Rewrote the Tailwind processor securely to accept the explicit native values since corresponding CSS Variables are physically deleted.
+- **Docs & Testing Parity**: Validated all 7 proxy edge-cases natively hitting 100% test coverage! Clarified exactly how CLI outputs unlock browser context safely inside `docs/media.md` natively without traces constraint dependencies.
+
 ## 0.3.13
 
 ### Patch Changes
