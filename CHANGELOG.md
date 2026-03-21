@@ -1,5 +1,11 @@
 # grammar-style
 
+## 0.5.2
+
+### Patch Changes
+
+- - **Fix `modes` and `responsive` String Validation**: Refactored `ValidateOverrides` to decouple string assignment from `semantics` shape extraction. Mode and responsive override values are now independently piped through `ValidateString`, unblocking dynamic string evaluation like opacity suffixes (e.g., `color.motif.melody/25`) or complex values natively.
+
 ## 0.5.1
 
 ### Patch Changes
