@@ -213,6 +213,9 @@ export type IsStrictToken<S extends string> =
   : S extends `${string}.${string}` ? `Error: invalid token: '${S}'${DidYouMeanStrictSuffix<S>}`
   : true
 
+export type FilterToken<Prefix extends string> = Extract<TokenPath, `${Prefix}.${string}` | Prefix>
+
+
 export type CleanPunctuation<S extends string> =
   S extends `${infer L}(${infer R}` ? CleanPunctuation<`${L} ${R}`>
   : S extends `${infer L})${infer R}` ? CleanPunctuation<`${L} ${R}`>

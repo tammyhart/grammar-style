@@ -368,3 +368,34 @@ defineGrammar({
     md: {},
   },
 })
+
+// ----------------------------------------------------------------------------
+// RULE: FilterToken safely extracts targeted token hierarchies
+// ----------------------------------------------------------------------------
+defineGrammar({
+  primitives: {
+    color: { primary: "#fff" },
+    shadow: { sm: "0 0 0.1rem #000" },
+  },
+  semantics: {},
+})
+
+declare module "./types" {
+  export interface Register {
+    theme: {
+      primitives: {
+        color: { primary: "#fff" }
+        shadow: { sm: "0 0 0.1rem #000" }
+      }
+      semantics: {}
+    }
+  }
+}
+
+import { type FilterToken } from "./types"
+
+const _colorTarget: FilterToken<"color"> = "color.primary"
+
+// @ts-expect-error - shadow.sm is mapped explicitly to shadow, not color
+const _badColorTarget: FilterToken<"color"> = "shadow.sm"
+

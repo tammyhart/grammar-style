@@ -341,6 +341,43 @@ In addition to `token()`, `grammar-style` natively exposes a `media` object dire
 > **⚠️ Strict Sandbox Warning (Linaria, Vanilla Extract, Next.js):**
 > If your styling framework restricts Node built-ins (`fs`, `jiti`) during compilation, importing `media` directly will throw a Sandbox Error. To fix this, run `npx grammar-style generate` (or add it to your `package.json` dev script) to dump a statically readable token cache!
 
+Grammar Style validates any token strings natively at compile time enforcing literal string compliance instantly!
+
+```javascript
+/* Error: invalid token: 'sz.12' Did you mean 'size.12'? */
+const p = token("sz.12")
+```
+
+### Building Strict Custom Utilities
+
+Since defining an entire internal design system is inherently contextual, you'll likely want to create custom opinionated abstractions (like complex shadows or layout builders). Grammar Style natively exports a powerful generic types module making it mathematically proven to secure custom utilities:
+
+```javascript
+import { token, type FilterToken } from "grammar-style"
+
+// Dynamically extracts autocomplete strictly explicitly targeting colors!
+const border = (
+  color: FilterToken<"color">,
+  placement: "top" | "bottom" | "all" = "all",
+): string => {
+  if (placement === "top") {
+    return `inset 0 ${token("size.1")} 0 ${token(color)}`
+  }
+  if (placement === "bottom") {
+    return `inset 0 ${token("-size.1")} 0 ${token(color)}`
+  }
+  return `inset 0 0 0 ${token("size.1")} ${token(color)}`
+}
+
+// Strictly Typed ✅
+border("color.danger.400", "top") 
+
+// Type Error: Argument of type '"size.4"' is not assignable to "color.*" ❌
+border("size.4", "bottom") 
+```
+
+<br>
+<hr>
 For CSS-in-JS libraries that use object syntax and expect raw condition strings (like Vanilla Extract or StyleX) instead of full `@media` wrappers, we also export a native `breakpoint` object.
 
 ### 1. Template Strings (Linaria, Styled Components)
