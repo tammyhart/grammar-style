@@ -1,5 +1,11 @@
 # grammar-style
 
+## 0.6.0
+
+### Minor Changes
+
+- Added native Vite, Astro, SvelteKit, and Nuxt plugin adapter for zero-runtime root CSS variables projection.
+
 ## 0.5.2
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "grammar-style",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "A zero-runtime token resolution engine for design systems.",
   "keywords": [
     "design-tokens",
@@ -74,6 +74,11 @@
       "types": "./dist/adapters/vanilla-extract.d.ts",
       "import": "./dist/adapters/vanilla-extract.mjs",
       "require": "./dist/adapters/vanilla-extract.js"
+    },
+    "./vite": {
+      "types": "./dist/adapters/vite.d.ts",
+      "import": "./dist/adapters/vite.mjs",
+      "require": "./dist/adapters/vite.js"
     }
   },
   "main": "dist/index.js",
