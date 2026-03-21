@@ -1,5 +1,11 @@
 # grammar-style
 
+## 0.5.0
+
+### Minor Changes
+
+- 4f5fcf5: - **Utility Type `FilterToken` Exported**: Added a `FilterToken<Prefix>` generic utility mapped exclusively to mathematically constrain parameter paths downstream (e.g. `FilterToken<"color">`). This directly empowers strict scaling validation for anyone rolling their own external UI functions or composite variables seamlessly natively!
+
 ## 0.4.1
 
 ### Patch Changes
