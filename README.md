@@ -370,10 +370,10 @@ const border = (
 }
 
 // Strictly Typed ✅
-border("color.danger.400", "top") 
+border("color.danger.400", "top")
 
 // Type Error: Argument of type '"size.4"' is not assignable to "color.*" ❌
-border("size.4", "bottom") 
+border("size.4", "bottom")
 ```
 
 <br>
@@ -428,6 +428,7 @@ Available natively out-of-the-box:
 - [Vanilla Extract](./docs/adapters.md#4-vanilla-extract)
 - [StyleX](./docs/adapters.md#5-stylex)
 - [Linaria](./docs/adapters.md#7-linaria)
+- [Vite / Astro / Native](./docs/adapters.md#8-vite--astro--sveltekit--nuxt)
 
 Just drop the adapter directly into your framework's provider or config plugin layer and move on to building your application!
 

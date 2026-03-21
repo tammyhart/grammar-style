@@ -3,17 +3,20 @@
 `grammar-style` is framework-agnostic. To bridge the gap between your strictly-typed dictionary and your favorite styling tool, we provide instant adapter functions that automatically parse your `grammar.config.ts` into the exact shape expected by the compiler!
 
 ## 🔒 Strict Sandboxes (Linaria, Vanilla Extract, Next.js)
+
 If your framework evaluates code within a strict AST sandbox that prevents dynamic disk I/O (`fs`, `node:path`), calling an adapter parameterless (e.g. `createLinariaTheme()`) will crash the build, since it tries to dynamically read the config file.
 To completely bypass all Node built-ins inside sandboxes, manually import and pass your configuration object directly into the adapter:
 
 ```typescript
 import config from "../../grammar.config.ts"
-// Natively evaluates the passed object! Zero disk I/O, Sandbox Approved! 
+// Natively evaluates the passed object! Zero disk I/O, Sandbox Approved!
 const grammar = createLinariaTheme(config)
 ```
 
 ## 📐 Structural Constraints
+
 Because `grammar-style` strictly enforces scalable mathematical CSS natively, all adapters instantly inherit two aggressive architectural rules:
+
 1. **No `px` Strings Allowed:** Emitting `12px` inside any adapter's context crashes compilation instantly. You must use `rem` or `em`.
 2. **`size` Grid Immutability:** The built-in layout sizes `size.4`, `size.16`, etc., map natively mathematically inline. You are entirely restricted from passing custom `primitives.size` objects into any adapter!
 
@@ -147,4 +150,25 @@ export const globals = css`
     ${grammar.cssText}
   }
 `
+```
+
+## 8. Vite / Astro / SvelteKit / Nuxt
+
+If you prefer working with directly native raw CSS variables, the Vite plugin automatically hooks into your environment to actively project standard variables without generating artifacts!
+
+```typescript
+// vite.config.ts (or astro.config.mjs, etc)
+import { defineConfig } from "vite"
+import grammarStyleVitePlugin from "grammar-style/vite"
+
+export default defineConfig({
+  plugins: [grammarStyleVitePlugin()],
+})
+```
+
+Inside your base client layout or standard CSS file, effortlessly mount the virtual module to unlock auto-scaled mathematical themes instantly:
+
+```typescript
+// src/Layout.astro (Or layout.tsx for React Router / Solid)
+import "virtual:grammar-style.css"
 ```
