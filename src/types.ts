@@ -46,13 +46,15 @@ export type DeepPartialPaths<T, P, Ops extends string | number = ValidOpacityNam
   : T extends number ? number
   : T
 
-export type ValidateOverrides<Input, Shape> =
+export type ValidateOverrides<Input, Shape, P, Ops extends string | number> =
   Input extends object ?
     {
       [K in keyof Input]: K extends keyof NonNullable<Shape> ?
         Input[K] extends object ?
-          ValidateOverrides<Input[K], NonNullable<Shape>[K]>
-        : NonNullable<Shape>[K]
+          ValidateOverrides<Input[K], NonNullable<Shape>[K], P, Ops>
+        : Input[K] extends string ? ValidateString<Input[K], P, false, Ops>
+        : Input[K] extends number ? number
+        : Input[K]
       : "Error: This property does not exist in your semantics shape"
     }
   : Shape
@@ -324,7 +326,7 @@ export type AllowedOpacities<C> =
 
 export type ValidateModes<M, S, P, C> = {
   [K in keyof M]: K extends AllowedModes<C> ?
-    ValidateOverrides<M[K], DeepPartialPaths<SafeNoInfer<S>, P, AllowedOpacities<C> & (string | number)>>
+    ValidateOverrides<M[K], SafeNoInfer<S>, P, AllowedOpacities<C> & (string | number)>
   : "Error: Mode name must be a valid default mode ('dark', 'light') or defined in options.modes"
 }
 
@@ -388,7 +390,7 @@ export type AllowedBreakpoints<C> =
 
 export type ValidateResponsive<R, S, P, C> = {
   [K in keyof R]: K extends AllowedBreakpoints<C> ?
-    ValidateOverrides<R[K], DeepPartialPaths<SafeNoInfer<S>, P, AllowedOpacities<C> & (string | number)>>
+    ValidateOverrides<R[K], SafeNoInfer<S>, P, AllowedOpacities<C> & (string | number)>
   : "Error: Responsive key must be a valid base breakpoint name (or its 'Max' equivalent)."
 }
 
