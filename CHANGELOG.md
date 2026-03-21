@@ -1,5 +1,11 @@
 # grammar-style
 
+## 0.5.1
+
+### Patch Changes
+
+- - **Extend `TokenPath`**: Augmented the natively exported `TokenPath` generic utility to optionally accept a string prefix. This allows you to specifically narrow autocompletion to distinct hierarchical subsets natively (e.g., `TokenPath<"color">`), while retaining backwards compatibility everywhere else.
+
 ## 0.5.0
 
 ### Minor Changes
