@@ -353,11 +353,11 @@ const p = token("sz.12")
 Since defining an entire internal design system is inherently contextual, you'll likely want to create custom opinionated abstractions (like complex shadows or layout builders). Grammar Style natively exports a powerful generic types module making it mathematically proven to secure custom utilities:
 
 ```javascript
-import { token, type FilterToken } from "grammar-style"
+import { token, type TokenPath } from "grammar-style"
 
 // Dynamically extracts autocomplete strictly explicitly targeting colors!
 const border = (
-  color: FilterToken<"color">,
+  color: TokenPath<"color">,
   placement: "top" | "bottom" | "all" = "all",
 ): string => {
   if (placement === "top") {

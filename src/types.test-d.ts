@@ -392,10 +392,11 @@ declare module "./types" {
   }
 }
 
-import { type FilterToken } from "./types"
+import { type TokenPath } from "./types"
 
-const _colorTarget: FilterToken<"color"> = "color.primary"
+const _colorTarget: TokenPath<"color"> = "color.primary"
+const _colorOpacityTarget: TokenPath<"color"> = "color.primary/10"
 
 // @ts-expect-error - shadow.sm is mapped explicitly to shadow, not color
-const _badColorTarget: FilterToken<"color"> = "shadow.sm"
+const _badColorTarget: TokenPath<"color"> = "shadow.sm"
 

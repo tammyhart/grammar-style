@@ -20,5 +20,5 @@ export { loadConfig } from "./config"
 export { defaultBreakpoints, defaultSizes, defaultModes, defaultOpacities } from "./defaults"
 
 // Expose helpful utility types for external typed setups
-export type { ThemeConfig, TokenPath, FilterToken, DeepPartial, Register } from "./types"
+export type { ThemeConfig, TokenPath, DeepPartial, Register } from "./types"
 export type { ValidSizeStr, BreakpointName, ValidModeName, ValidOpacityName } from "./defaults"

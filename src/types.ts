@@ -188,7 +188,7 @@ export type ResolvesToSize<T, P extends string = ""> = T extends undefined ? nev
     : never
 }[keyof T]
 
-export type TokenPath = 
+type AllTokenPaths = 
   | CleanPath<NonNullable<Leaves<GrammarTokens>>> 
   | CleanPath<NonNullable<Leaves<GrammarPrimitives>>>
   | (ResolvesToSize<GrammarTokens> extends infer R ? R extends string ? `-${R}` : never : never)
@@ -199,21 +199,19 @@ export type IsStrictToken<S extends string> =
   S extends "" ? true
   : S extends "-" ? true
   : S extends `${string}px${string}` ? `Error: 'px' values are not allowed`
-  : S extends TokenPath ? true
+  : S extends AllTokenPaths ? true
   : S extends `-${infer Rest}` ? (
-      Rest extends TokenPath ? true 
+      Rest extends AllTokenPaths ? true 
       : Rest extends `${string}.${string}` ? `Error: invalid negative token: '${Rest}'${DidYouMeanStrictSuffix<S>}` 
       : true
     )
   : S extends `${infer Prefix}/${infer _Ops}` ? (
-      Prefix extends TokenPath ? true 
+      Prefix extends AllTokenPaths ? true 
       : Prefix extends `${string}.${string}` ? `Error: invalid token before opacity: '${Prefix}'${DidYouMeanStrictSuffix<S>}` 
       : true
     )
   : S extends `${string}.${string}` ? `Error: invalid token: '${S}'${DidYouMeanStrictSuffix<S>}`
   : true
-
-export type FilterToken<Prefix extends string> = Extract<TokenPath, `${Prefix}.${string}` | Prefix>
 
 
 export type CleanPunctuation<S extends string> =
@@ -425,3 +423,10 @@ export type ValidatedConfig<
     C
   >
 }
+
+export type TokenPath<Prefix extends string = ""> = 
+  Prefix extends "" ? AllTokenPaths : 
+  | Extract<AllTokenPaths, `${Prefix}.${string}` | Prefix> 
+  | `${Extract<AllTokenPaths, `${Prefix}.${string}` | Prefix>}/${AllowedOpacities<GrammarRegistry> & (string | number)}`
+
+
