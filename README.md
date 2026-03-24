@@ -301,7 +301,7 @@ Once your grammar is defined, you'll need to safely consume those tokens inside 
 
 ```typescript
 const Box = styled.div`
-  /* Emits: var(--color-surface-50) */
+  /* Emits: rgba(var(--color-surface-rgb), 0.5) */
   color: ${token("color.surface/50")};
 
   /* Emits: calc(25rem * 2) */
@@ -316,8 +316,13 @@ const Box = styled.div`
 
 ```typescript
 export const boxStyle = style({
+  // Emits: rgba(var(--color-surface-rgb), 0.5)
   color: token("color.surface/50"),
+
+  // Emits: calc(25rem * 2)
   margin: token("calc(size.400 * 2)"),
+
+  // Emits: -25rem
   bottom: token("-size.400"),
 })
 ```
@@ -326,10 +331,31 @@ export const boxStyle = style({
 
 ```tsx
 export const Box = () => (
-  <div style={{ color: token("color.brand/50") }}>
+  <div
+    style={{
+      // Emits: rgba(var(--color-brand-rgb), 0.5)
+      color: token("color.brand/50"),
+    }}
+  >
     Safely typed static inline styles!
   </div>
 )
+```
+
+Grammar Style validates any token strings natively at compile time enforcing literal string compliance instantly!
+
+```javascript
+// Typos in root primitives or paths are caught instantly with suggestions
+/* Error: invalid token: 'sz.12' Did you mean 'size.12'? */
+const p = token("sz.12")
+
+// Trying to access mapped variables that don't exist in your semantics
+/* Error: invalid token: 'color.foo' */
+const bg = token("color.foo")
+
+// Breaking geometric scaling constraints unless `options.useStrictSizes` was set to false
+/* Error: invalid token: 'size.15' */
+const width = token("size.15")
 ```
 
 <a href="#top">⬆️ Back to Top</a>
@@ -340,45 +366,6 @@ In addition to `token()`, `grammar-style` natively exposes a `media` object dire
 
 > **⚠️ Strict Sandbox Warning (Linaria, Vanilla Extract, Next.js):**
 > If your styling framework restricts Node built-ins (`fs`, `jiti`) during compilation, importing `media` directly will throw a Sandbox Error. To fix this, run `npx grammar-style generate` (or add it to your `package.json` dev script) to dump a statically readable token cache!
-
-Grammar Style validates any token strings natively at compile time enforcing literal string compliance instantly!
-
-```javascript
-/* Error: invalid token: 'sz.12' Did you mean 'size.12'? */
-const p = token("sz.12")
-```
-
-### Building Strict Custom Utilities
-
-Since defining an entire internal design system is inherently contextual, you'll likely want to create custom opinionated abstractions (like complex shadows or layout builders). Grammar Style natively exports a powerful generic types module making it mathematically proven to secure custom utilities:
-
-```javascript
-import { token, type TokenPath } from "grammar-style"
-
-// Dynamically extracts autocomplete strictly explicitly targeting colors!
-const border = (
-  color: TokenPath<"color">,
-  placement: "top" | "bottom" | "all" = "all",
-): string => {
-  if (placement === "top") {
-    return `inset 0 ${token("size.1")} 0 ${token(color)}`
-  }
-  if (placement === "bottom") {
-    return `inset 0 ${token("-size.1")} 0 ${token(color)}`
-  }
-  return `inset 0 0 0 ${token("size.1")} ${token(color)}`
-}
-
-// Strictly Typed ✅
-border("color.danger.400", "top")
-
-// Type Error: Argument of type '"size.4"' is not assignable to "color.*" ❌
-border("size.4", "bottom")
-```
-
-<br>
-<hr>
-For CSS-in-JS libraries that use object syntax and expect raw condition strings (like Vanilla Extract or StyleX) instead of full `@media` wrappers, we also export a native `breakpoint` object.
 
 ### 1. Template Strings (Linaria, Styled Components)
 
@@ -394,6 +381,8 @@ export const Footer = styled.footer`
 ```
 
 ### 2. Object Syntax (Vanilla Extract, StyleX, Emotion)
+
+For CSS-in-JS libraries that use object syntax and expect raw condition strings (like Vanilla Extract or StyleX) instead of full `@media` wrappers, we also export a native `breakpoint` object.
 
 ```typescript
 import { breakpoint, token } from "grammar-style"
@@ -483,6 +472,34 @@ export default defineConfig({
 > **Using something else?** Check out the [Adapters Documentation](./docs/adapters.md) for full implementation guides spanning Styled Components, Vanilla Extract, StyleX, Emotion, and Linaria!
 
 <a href="#top">⬆️ Back to Top</a>
+
+## 🏗️ Building Strict Custom Utilities
+
+Since defining an entire internal design system is inherently contextual, you'll likely want to create custom opinionated abstractions (like complex shadows or layout builders). Grammar Style natively exports a powerful generic types module making it mathematically proven to secure custom utilities:
+
+```javascript
+import { token, type TokenPath } from "grammar-style"
+
+// Dynamically extracts autocomplete strictly explicitly targeting colors!
+const border = (
+  color: TokenPath<"color">,
+  placement: "top" | "bottom" | "all" = "all",
+): string => {
+  if (placement === "top") {
+    return `inset 0 ${token("size.1")} 0 ${token(color)}`
+  }
+  if (placement === "bottom") {
+    return `inset 0 ${token("-size.1")} 0 ${token(color)}`
+  }
+  return `inset 0 0 0 ${token("size.1")} ${token(color)}`
+}
+
+// Strictly Typed ✅
+border("color.danger.400", "top")
+
+// Type Error: Argument of type '"size.4"' is not assignable to "color.*" ❌
+border("size.4", "bottom")
+```
 
 <div align="center">
   <hr style="margin-block:2rem;" />

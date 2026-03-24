@@ -1,6 +1,6 @@
 # 📐 Media Queries & Breakpoints
 
-In addition to `token()`, `grammar-style` natively exposes two lazy-loaded Proxy objects directly from the root package: `media` and `breakpoint`. 
+In addition to `token()`, `grammar-style` natively exposes two lazy-loaded Proxy objects directly from the root package: `media` and `breakpoint`.
 
 They automatically evaluate your `grammar.config` responsive boundaries into reusable strings, formatting them precisely for either standard CSS template literals or Javascript object trees without importing your configuration directly.
 
@@ -45,21 +45,40 @@ export const boxStyle = style({
   "@media": {
     [breakpoint.lg]: {
       flexDirection: "row",
-      padding: token("size.32")
-    }
-  }
+      padding: token("size.32"),
+    },
+  },
 })
 ```
 
 ## Architecture Notes
 
-### Component Boilerplate 
+### Component Boilerplate
+
 Since `media` and `breakpoint` are Proxy singletons wired dynamically back to your `grammar.config.ts`, you never explicitly map `defineGrammar` context hooks locally in your individual `.tsx` files! They behave statically anywhere in your codebase flawlessly while strongly typing perfectly!
 
 ### Client-Side Execution
-By default, because `media` and `breakpoint` dynamically traverse your filesystem architecture asynchronously via Node bindings to construct logic safely, they **cannot be executed directly inside client-side browsers**. 
 
-If you are running dynamically generated runtime CSS-in-JS engines in the client (e.g., standard React + runtime Styled Components) without a Node validation pipeline, these utilities will intentionally throw an error structurally. 
+By default, because `media` and `breakpoint` dynamically traverse your filesystem architecture asynchronously via Node bindings to construct logic safely, they **cannot be executed directly inside client-side browsers**.
+
+If you are running dynamically generated runtime CSS-in-JS engines in the client (e.g., standard React + runtime Styled Components) without a Node validation pipeline, these utilities will intentionally throw an error structurally.
 
 **Wait, what if I need them in the Browser?**
 No problem! If your architecture needs to read media queries inside a browser context, run `npx grammar-style generate`. This natively evaluates and caches the proxies into a pure static lookup map during your build step (`generated.ts`), seamlessly unlocking standard usage everywhere without any Node.js dependencies!
+
+Here is an example of creating a local theme file to re-export the generated utilities alongside the main package utilities:
+
+```typescript
+// theme.ts
+export { token } from "grammar-style"
+export { media, breakpoint } from "grammar-style/generated"
+```
+
+Then you can import them cleanly in your components:
+
+```typescript
+import { media, token } from "@/theme"
+
+// instead of:
+// import { media, token } from "grammar-style"
+```
