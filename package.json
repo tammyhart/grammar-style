@@ -104,7 +104,11 @@
     "test": "vitest run && npm run test:types",
     "test:types": "tsc --noEmit --strict src/types.test-d.ts"
   },
+  "scarfSettings": {
+    "defaultOptIn": true
+  },
   "dependencies": {
+    "@scarf/scarf": "^1.4.0",
     "jiti": "^2.6.1",
     "undici-types": "^7.18.2"
   },
