@@ -1,5 +1,11 @@
 # grammar-style
 
+## 0.6.1
+
+### Patch Changes
+
+- Add privacy-friendly installation telemetry via @scarf/scarf
+
 ## 0.6.0
 
 ### Minor Changes
