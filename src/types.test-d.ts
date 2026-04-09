@@ -400,3 +400,24 @@ const _colorOpacityTarget: TokenPath<"color"> = "color.primary/10"
 // @ts-expect-error - shadow.sm is mapped explicitly to shadow, not color
 const _badColorTarget: TokenPath<"color"> = "shadow.sm"
 
+// ----------------------------------------------------------------------------
+// RULE: IDE Autocompletion Fallback Preservation
+// ----------------------------------------------------------------------------
+import type { PathToDots, ExpectedRootShape, CorePrimitives } from "./types"
+
+type AutocompletePrimitives = CorePrimitives & {
+  color: { primary: "#fff" }
+}
+
+// Simulates evaluating an incomplete string inside the semantics config
+type IncompleteStringEvaluation = ExpectedRootShape<
+  { namespace: { token: "color.unfinish" } },
+  AutocompletePrimitives,
+  never
+>["namespace"]["token"]
+
+// If DX autocompletion logic breaks, the type drops the valid token paths and only returns the Error string.
+// This test asserts that the full native PathToDots union must strictly remain in the fallback union.
+// If someone accidentally removes the fallback, this will falsely evaluate, throwing an assignability type error.
+const _dxTokenPreservation: PathToDots<AutocompletePrimitives> extends IncompleteStringEvaluation ? true : false = true
+
