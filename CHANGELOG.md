@@ -1,5 +1,11 @@
 # grammar-style
 
+## 0.6.2
+
+### Patch Changes
+
+- **Restore Autocompletion Fallbacks**: Fixed a regression where TypeScript autocompletion for token literals was incorrectly dropped when evaluating partial or invalid string inputs across `semantics`, `modes`, `responsive` definitions and the core `token()` wrapper. The types now properly merge literal path unions alongside their string validation errors natively to restore IDE intellisense.
+
 ## 0.6.1
 
 ### Patch Changes

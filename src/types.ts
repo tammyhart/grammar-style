@@ -42,7 +42,7 @@ export type DeepPartialPaths<T, P, Ops extends string | number = ValidOpacityNam
       [K in keyof T]?: DeepPartialPaths<T[K], P, Ops>
     }
   : T extends PathToDots<P> ? PathToDots<P>
-  : T extends string ? ValidateString<T, P, false, Ops>
+  : T extends string ? PathToDots<P> | ValidateString<T, P, false, Ops>
   : T extends number ? number
   : T
 
@@ -52,7 +52,8 @@ export type ValidateOverrides<Input, Shape, P, Ops extends string | number> =
       [K in keyof Input]: K extends keyof NonNullable<Shape> ?
         Input[K] extends object ?
           ValidateOverrides<Input[K], NonNullable<Shape>[K], P, Ops>
-        : Input[K] extends string ? ValidateString<Input[K], P, false, Ops>
+        : Input[K] extends PathToDots<P> ? PathToDots<P>
+        : Input[K] extends string ? PathToDots<P> | ValidateString<Input[K], P, false, Ops>
         : Input[K] extends number ? number
         : Input[K]
       : "Error: This property does not exist in your semantics shape"
@@ -156,7 +157,7 @@ export type ValidateRootObject<Input, P, IsPrimitive extends boolean = false, Op
 export type ExpectedShape<Input, P, Ops extends string | number = ValidOpacityName> = {
   [K in keyof Input]: Input[K] extends object ? ExpectedShape<Input[K], P, Ops>
   : Input[K] extends PathToDots<P> ? PathToDots<P>
-  : Input[K] extends string ? ValidateString<Input[K], P, false, Ops>
+  : Input[K] extends string ? PathToDots<P> | ValidateString<Input[K], P, false, Ops>
   : Input[K] extends number ? number
   : PathToDots<P>
 }

@@ -3,10 +3,12 @@ import { TOKEN_REGEX, formatTokenToCssVar } from "./utils"
 
 const cache = new Map<string, string>()
 
-type TokenInput<T extends string> = T extends TokenPath ? T : ValidateTokenString<T> extends T ? T : ValidateTokenString<T>
-
+// Adding TokenPath back to the union ensures the IDE always has tokens to suggest,
+// while TS will still throw an error if T is an invalid literal.
 /* v8 ignore next */
-const token = <T extends string>(path: TokenInput<T>): string => {
+const token = <T extends string>(
+  path: T extends TokenPath ? TokenPath : TokenPath | ValidateTokenString<T>
+): string => {
   if (!path) {
     return ""
   }
